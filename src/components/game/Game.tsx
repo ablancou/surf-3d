@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { GameScene } from "@/components/game/GameScene";
 import { ControlsOverlay } from "@/components/ui/ControlsOverlay";
@@ -23,8 +23,6 @@ export function Game() {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputManagerRef = useRef<InputManager | null>(null);
   const audioStarted = useRef(false);
-  const [ready, setReady] = useState(false);
-
   const oceanMode = useSettingsStore((s) => s.oceanMode);
   const rendererKind = useSettingsStore((s) => s.rendererKind);
   const perfTier = useSettingsStore((s) => s.perfTier);
@@ -77,13 +75,9 @@ export function Game() {
           const { renderer, kind } = await createGameRenderer(canvas);
           const store = useSettingsStore.getState();
           store.setRendererKind(kind);
-          const tier = store.perfTier;
-          if (kind === "webgpu" && tier !== "low") {
-            store.setOceanMode("ifft");
-          } else if (tier === "low") {
+          if (store.perfTier === "low") {
             store.setOceanMode("gerstner");
           }
-          setReady(true);
           return renderer;
         }}
         onCreated={({ gl }) => {
@@ -91,9 +85,7 @@ export function Game() {
           gl.toneMappingExposure = 1.1;
         }}
       >
-        {ready && (
-          <GameScene inputManager={inputManagerRef.current!} key={sceneKey} />
-        )}
+        <GameScene inputManager={inputManagerRef.current!} key={sceneKey} />
       </Canvas>
       <SpotSelector />
       <MultiplayerPanel />
