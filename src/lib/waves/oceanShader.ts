@@ -87,7 +87,7 @@ void main() {
 
   float fresnel = pow(1.0 - max(dot(N, V), 0.0), 3.0);
   float spec = pow(max(dot(N, H), 0.0), 96.0);
-  float diffuse = max(dot(N, L), 0.0) * 0.4 + 0.22;
+  float diffuse = max(dot(N, L), 0.0) * 0.45 + 0.38;
 
   float depthMix = smoothstep(-2.5, 1.2, vDepth);
   vec3 water = mix(uDeepColor, uShallowColor, depthMix);

@@ -57,9 +57,7 @@ export function Ocean() {
     const mesh = meshRef.current;
     if (!mesh) return;
 
-    const tileX = Math.floor(boardVisualState.x / OCEAN_SIZE) * OCEAN_SIZE;
-    const tileZ = Math.floor(boardVisualState.z / OCEAN_SIZE) * OCEAN_SIZE;
-    mesh.position.set(tileX, 0, tileZ);
+    mesh.position.set(boardVisualState.x, 0, boardVisualState.z);
 
     if (materialRef.current) {
       materialRef.current.uniforms.uTime.value = gameClock.time;

@@ -3,6 +3,7 @@
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
+import { boardVisualState } from "@/lib/game/boardVisualState";
 import { gameClock } from "@/lib/game/clock";
 import { OceanSimulator } from "@/lib/waves/OceanSimulator";
 import { bindOceanSimulator, setOceanMode } from "@/lib/waves/oceanSampler";
@@ -12,6 +13,7 @@ import { getActiveSpot } from "@/stores/spotStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 
 export function OceanIFFT() {
+  const meshRef = useRef<THREE.Mesh>(null);
   const simRef = useRef<OceanSimulator | null>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const textureRef = useRef<THREE.DataTexture | null>(null);
@@ -47,6 +49,11 @@ export function OceanIFFT() {
   );
 
   useFrame(() => {
+    const mesh = meshRef.current;
+    if (mesh) {
+      mesh.position.set(boardVisualState.x, 0, boardVisualState.z);
+    }
+
     const sim = simRef.current;
     const mat = materialRef.current;
     const tex = textureRef.current;
@@ -63,7 +70,7 @@ export function OceanIFFT() {
   });
 
   return (
-    <mesh rotation-x={-Math.PI / 2} receiveShadow>
+    <mesh ref={meshRef} rotation-x={-Math.PI / 2} frustumCulled={false} receiveShadow>
       <planeGeometry args={[OCEAN_SIZE, OCEAN_SIZE, segments, segments]} />
       <shaderMaterial
         ref={materialRef}

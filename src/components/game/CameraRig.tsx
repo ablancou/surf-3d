@@ -23,8 +23,8 @@ const forward = new THREE.Vector3();
 
 export function CameraRig({ targetPosition, targetRotation }: CameraRigProps) {
   const { camera } = useThree();
-  const smoothPos = useRef(new THREE.Vector3(0, 5.5, -18));
-  const smoothLook = useRef(new THREE.Vector3(0, 1.2, 4));
+  const smoothPos = useRef(new THREE.Vector3(0, 9.5, -22));
+  const smoothLook = useRef(new THREE.Vector3(0, 0.8, 14));
   const snapped = useRef(false);
 
   useFrame((_, delta) => {
@@ -40,19 +40,22 @@ export function CameraRig({ targetPosition, targetRotation }: CameraRigProps) {
     }
 
     forward.set(0, 0, 1).applyQuaternion(targetRotation);
+    forward.y = 0;
+    if (forward.lengthSq() < 0.0001) forward.set(0, 0, 1);
+    forward.normalize();
 
     const tx = boardVisualState.x;
     const ty = boardVisualState.y;
     const tz = boardVisualState.z;
 
-    cameraOffset.copy(forward).multiplyScalar(-11);
-    cameraOffset.y += 5;
+    cameraOffset.copy(forward).multiplyScalar(-14);
+    cameraOffset.y = 7.5;
 
-    lookOffset.copy(forward).multiplyScalar(16);
-    lookOffset.y -= 1.2;
+    lookOffset.copy(forward).multiplyScalar(22);
+    lookOffset.y = 1.2;
 
     desiredPosition.set(tx, ty, tz).add(cameraOffset);
-    desiredLookAt.set(tx, ty, tz).add(lookOffset);
+    desiredLookAt.set(tx, 0.8, tz).add(lookOffset);
 
     if (shake > 0.01) {
       shakeOffset.set(
