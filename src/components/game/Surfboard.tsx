@@ -142,9 +142,13 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
       airTimeRef.current,
     );
 
+    const pos = body.translation();
     boardVisualState.speed = telemetry.speed;
     boardVisualState.tiltX = telemetry.tiltX;
     boardVisualState.inTube = telemetry.inTube;
+    boardVisualState.x = pos.x;
+    boardVisualState.y = pos.y;
+    boardVisualState.z = pos.z;
 
     setTubeState(telemetry.inTube, telemetry.tubeDepth);
 

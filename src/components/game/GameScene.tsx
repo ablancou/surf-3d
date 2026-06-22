@@ -4,7 +4,7 @@ import { Physics } from "@react-three/rapier";
 import { useFrame } from "@react-three/fiber";
 import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { CameraRig } from "@/components/game/CameraRig";
+
 import { Effects } from "@/components/game/Effects";
 import { OceanSystem } from "@/components/game/OceanSystem";
 import { RemoteSurfers } from "@/components/game/RemoteSurfers";
@@ -36,21 +36,23 @@ export function GameScene({ inputManager }: GameSceneProps) {
     [],
   );
 
-  useFrame((_, delta) => {
+  useFrame(({ camera }, delta) => {
     gameClock.delta = Math.min(delta, 0.05);
     gameClock.time += gameClock.delta;
+
+    const target = boardPosition.current;
+    camera.position.set(target.x, 7, target.z + 14);
+    camera.lookAt(target.x, 0, target.z - 30);
   });
 
   return (
     <>
-      <color attach="background" args={["#87b8d9"]} />
-      <fog attach="fog" args={[spot.atmosphere.fogColor, spot.atmosphere.fogNear, perf.fogFar]} />
-
-      <ambientLight intensity={0.35} />
+      <hemisphereLight args={["#b8d9f0", spot.atmosphere.deepWater, 0.65]} />
+      <ambientLight intensity={0.45} />
       <directionalLight
         castShadow={perf.enableShadows}
-        intensity={1.6}
-        position={[60, 80, 40]}
+        intensity={2.2}
+        position={[40, 60, 20]}
         shadow-mapSize={[perf.shadowMapSize, perf.shadowMapSize]}
         shadow-camera-left={-40}
         shadow-camera-right={40}
@@ -60,8 +62,8 @@ export function GameScene({ inputManager }: GameSceneProps) {
         shadow-camera-far={200}
       />
 
-      <Sky />
       <OceanSystem />
+      <Sky />
       <SprayParticles ref={particlesRef} />
       <RemoteSurfers />
       <ReplayGhosts />
@@ -75,11 +77,6 @@ export function GameScene({ inputManager }: GameSceneProps) {
           />
         </Physics>
       </Suspense>
-
-      <CameraRig
-        targetPosition={boardPosition.current}
-        targetRotation={boardRotation.current}
-      />
 
       <Effects />
     </>

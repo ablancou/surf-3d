@@ -1,4 +1,6 @@
 export const ifftOceanVertexShader = /* glsl */ `
+#include <common>
+
 uniform float uTime;
 uniform sampler2D uHeightMap;
 uniform float uOceanSize;
@@ -38,6 +40,8 @@ void main() {
 `;
 
 export const ifftOceanFragmentShader = /* glsl */ `
+#include <common>
+
 uniform vec3 uDeepColor;
 uniform vec3 uShallowColor;
 uniform vec3 uFoamColor;
@@ -69,6 +73,6 @@ void main() {
   color = mix(color, uShallowColor * 1.25, fresnel * 0.5);
   color *= diffuse;
 
-  gl_FragColor = vec4(color, 0.93);
+  gl_FragColor = vec4(color, 1.0);
 }
 `;

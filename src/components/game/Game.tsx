@@ -14,11 +14,8 @@ import { TutorialOverlay } from "@/components/ui/TutorialOverlay";
 import { TubeOverlay } from "@/components/ui/TubeOverlay";
 import { WipeoutOverlay } from "@/components/ui/WipeoutOverlay";
 import { audioEngine } from "@/lib/audio/AudioEngine";
-import { createGameRenderer } from "@/lib/gpu/webgpu";
 import { InputManager } from "@/lib/input/InputManager";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { useSpotStore } from "@/stores/spotStore";
-
 export function Game() {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputManagerRef = useRef<InputManager | null>(null);
@@ -27,7 +24,6 @@ export function Game() {
   const rendererKind = useSettingsStore((s) => s.rendererKind);
   const perfTier = useSettingsStore((s) => s.perfTier);
   const perf = useSettingsStore((s) => s.perf);
-  const spotId = useSpotStore((s) => s.spotId);
   const initPerf = useSettingsStore((s) => s.initPerf);
 
   if (!inputManagerRef.current) {
@@ -62,30 +58,30 @@ export function Game() {
     };
   }, [unlockAudio]);
 
-  const sceneKey = `${oceanMode}-${spotId}-${perfTier}`;
-
   return (
     <div ref={containerRef} className="relative h-dvh w-full touch-none select-none overflow-hidden bg-sky-300">
       <Canvas
-        shadows={perf.enableShadows}
+        shadows={false}
         dpr={[1, perf.dprMax]}
-        camera={{ fov: 55, near: 0.1, far: 500, position: [0, 4, 12] }}
-        gl={async (props) => {
-          const canvas = props.canvas as HTMLCanvasElement;
-          const { renderer, kind } = await createGameRenderer(canvas);
+        camera={{ fov: 62, near: 0.1, far: 2000, position: [0, 7, 5] }}
+        gl={{
+          antialias: true,
+          powerPreference: "high-performance",
+          alpha: false,
+          preserveDrawingBuffer: false,
+        }}
+        onCreated={({ gl }) => {
           const store = useSettingsStore.getState();
-          store.setRendererKind(kind);
+          store.setRendererKind("webgl");
           if (store.perfTier === "low") {
             store.setOceanMode("gerstner");
           }
-          return renderer;
-        }}
-        onCreated={({ gl }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
           gl.toneMappingExposure = 1.1;
+          gl.setClearColor(new THREE.Color("#87b8d9"));
         }}
       >
-        <GameScene inputManager={inputManagerRef.current!} key={sceneKey} />
+        <GameScene inputManager={inputManagerRef.current!} />
       </Canvas>
       <SpotSelector />
       <MultiplayerPanel />

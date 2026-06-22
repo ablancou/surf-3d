@@ -10,7 +10,8 @@ const BOARD_HALF_WIDTH = 0.28;
 const BUOYANCY = 16;
 const WATER_DRAG = 0.91;
 const AIR_DRAG = 0.994;
-const LIFT_FACTOR = 3.2;
+const LIFT_FACTOR = 1.8;
+const MAX_SPEED = 24;
 const GRAVITY = 9.81;
 const ALIGN_TORQUE = 22;
 const INPUT_TORQUE = 11;
@@ -172,6 +173,12 @@ export function applySurfboardForces(
     body.applyImpulse({ x: 0, y: POP_IMPULSE, z: 0 }, true);
   }
 
-  const speed = Math.sqrt(linvel.x ** 2 + linvel.z ** 2);
+  let speed = Math.sqrt(linvel.x ** 2 + linvel.z ** 2);
+  if (speed > MAX_SPEED) {
+    const scale = MAX_SPEED / speed;
+    body.setLinvel({ x: linvel.x * scale, y: linvel.y, z: linvel.z * scale }, true);
+    speed = MAX_SPEED;
+  }
+
   return { submerged, speed, waterHeight: avgHeight, waveSteepness: maxSteepness, downhillSpeed };
 }

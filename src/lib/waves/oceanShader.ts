@@ -1,6 +1,8 @@
 import { MAX_WAVES } from "./waveConfig";
 
 export const oceanVertexShader = /* glsl */ `
+#include <common>
+
 uniform float uTime;
 uniform vec4 uWaveA[${MAX_WAVES}];
 uniform vec4 uWaveB[${MAX_WAVES}];
@@ -64,6 +66,8 @@ void main() {
 `;
 
 export const oceanFragmentShader = /* glsl */ `
+#include <common>
+
 uniform vec3 uDeepColor;
 uniform vec3 uShallowColor;
 uniform vec3 uFoamColor;
@@ -95,6 +99,6 @@ void main() {
   color = mix(color, uShallowColor * 1.2, fresnel * 0.45);
   color *= diffuse;
 
-  gl_FragColor = vec4(color, 0.92);
+  gl_FragColor = vec4(color, 1.0);
 }
 `;

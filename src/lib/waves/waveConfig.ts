@@ -19,5 +19,5 @@ export const SURF_WAVES: readonly GerstnerWave[] = [
 
 export const MAX_WAVES = 6;
 
-export const OCEAN_SIZE = 256;
+export const OCEAN_SIZE = 512;
 export const OCEAN_SEGMENTS = 256;

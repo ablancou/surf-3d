@@ -70,7 +70,8 @@ export function OceanIFFT() {
         vertexShader={ifftOceanVertexShader}
         fragmentShader={ifftOceanFragmentShader}
         uniforms={uniforms}
-        transparent
+        side={THREE.DoubleSide}
+        transparent={false}
         depthWrite
       />
     </mesh>

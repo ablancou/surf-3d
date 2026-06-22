@@ -13,7 +13,7 @@ export type PerfPreset = {
 
 export const PERF_PRESETS: Record<PerfTier, PerfPreset> = {
   high: {
-    oceanSegments: 256,
+    oceanSegments: 128,
     ifftSize: 64,
     particleMax: 1200,
     enableEffects: true,
@@ -23,7 +23,7 @@ export const PERF_PRESETS: Record<PerfTier, PerfPreset> = {
     fogFar: 180,
   },
   medium: {
-    oceanSegments: 160,
+    oceanSegments: 96,
     ifftSize: 64,
     particleMax: 700,
     enableEffects: true,

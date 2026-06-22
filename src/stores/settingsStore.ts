@@ -20,11 +20,13 @@ type SettingsStore = {
   initPerf: () => void;
 };
 
+const initialPerfTier = detectPerfTier();
+
 export const useSettingsStore = create<SettingsStore>((set) => ({
   oceanMode: "gerstner",
   rendererKind: "webgl",
-  perfTier: "medium",
-  perf: PERF_PRESETS.medium,
+  perfTier: initialPerfTier,
+  perf: PERF_PRESETS[initialPerfTier],
 
   setOceanMode: (oceanMode) => {
     applyOceanMode(oceanMode);
