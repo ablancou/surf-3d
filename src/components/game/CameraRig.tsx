@@ -3,10 +3,11 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";
+import { boardVisualState } from "@/lib/game/boardVisualState";
 import { useGameStore } from "@/stores/gameStore";
 
-const BASE_FOV = 58;
-const TUBE_FOV = 50;
+const BASE_FOV = 60;
+const TUBE_FOV = 52;
 
 type CameraRigProps = {
   targetPosition: THREE.Vector3;
@@ -22,8 +23,8 @@ const forward = new THREE.Vector3();
 
 export function CameraRig({ targetPosition, targetRotation }: CameraRigProps) {
   const { camera } = useThree();
-  const smoothPos = useRef(new THREE.Vector3(0, 6, 10));
-  const smoothLook = useRef(new THREE.Vector3(0, 1, -6));
+  const smoothPos = useRef(new THREE.Vector3(0, 5.5, -18));
+  const smoothLook = useRef(new THREE.Vector3(0, 1.2, 4));
   const snapped = useRef(false);
 
   useFrame((_, delta) => {
@@ -40,14 +41,18 @@ export function CameraRig({ targetPosition, targetRotation }: CameraRigProps) {
 
     forward.set(0, 0, 1).applyQuaternion(targetRotation);
 
-    cameraOffset.copy(forward).multiplyScalar(-8);
-    cameraOffset.y += 4.5;
+    const tx = boardVisualState.x;
+    const ty = boardVisualState.y;
+    const tz = boardVisualState.z;
 
-    lookOffset.copy(forward).multiplyScalar(6);
-    lookOffset.y -= 0.8;
+    cameraOffset.copy(forward).multiplyScalar(-11);
+    cameraOffset.y += 5;
 
-    desiredPosition.copy(targetPosition).add(cameraOffset);
-    desiredLookAt.copy(targetPosition).add(lookOffset);
+    lookOffset.copy(forward).multiplyScalar(16);
+    lookOffset.y -= 1.2;
+
+    desiredPosition.set(tx, ty, tz).add(cameraOffset);
+    desiredLookAt.set(tx, ty, tz).add(lookOffset);
 
     if (shake > 0.01) {
       shakeOffset.set(
@@ -64,7 +69,7 @@ export function CameraRig({ targetPosition, targetRotation }: CameraRigProps) {
       snapped.current = true;
     }
 
-    const t = 1 - Math.exp(-5 * delta);
+    const t = 1 - Math.exp(-6 * delta);
     smoothPos.current.lerp(desiredPosition, t);
     smoothLook.current.lerp(desiredLookAt, t);
 

@@ -63,7 +63,7 @@ export function Game() {
       <Canvas
         shadows={false}
         dpr={[1, perf.dprMax]}
-        camera={{ fov: 62, near: 0.1, far: 2000, position: [0, 7, 5] }}
+        camera={{ fov: 60, near: 0.1, far: 2000, position: [0, 7, -22] }}
         gl={{
           antialias: true,
           powerPreference: "high-performance",

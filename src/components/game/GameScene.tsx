@@ -5,6 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 
+import { CameraRig } from "@/components/game/CameraRig";
 import { Effects } from "@/components/game/Effects";
 import { OceanSystem } from "@/components/game/OceanSystem";
 import { RemoteSurfers } from "@/components/game/RemoteSurfers";
@@ -36,13 +37,9 @@ export function GameScene({ inputManager }: GameSceneProps) {
     [],
   );
 
-  useFrame(({ camera }, delta) => {
+  useFrame((_, delta) => {
     gameClock.delta = Math.min(delta, 0.05);
     gameClock.time += gameClock.delta;
-
-    const target = boardPosition.current;
-    camera.position.set(target.x, 7, target.z + 14);
-    camera.lookAt(target.x, 0, target.z - 30);
   });
 
   return (
@@ -62,8 +59,12 @@ export function GameScene({ inputManager }: GameSceneProps) {
         shadow-camera-far={200}
       />
 
-      <OceanSystem />
       <Sky />
+      <OceanSystem />
+      <CameraRig
+        targetPosition={boardPosition.current}
+        targetRotation={boardRotation.current}
+      />
       <SprayParticles ref={particlesRef} />
       <RemoteSurfers />
       <ReplayGhosts />
