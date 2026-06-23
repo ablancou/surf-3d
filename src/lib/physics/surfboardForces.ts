@@ -3,21 +3,23 @@ import * as THREE from "three";
 import { sampleOcean } from "@/lib/waves/oceanSampler";
 import type { GameInputState } from "@/lib/input/types";
 
-const BOARD_HALF_HEIGHT = 0.08;
+export const BOARD_HALF_HEIGHT = 0.08;
 const BOARD_HALF_LENGTH = 1.05;
 const BOARD_HALF_WIDTH = 0.28;
+const BOARD_MASS = 7;
 
-const BUOYANCY = 16;
+const BUOYANCY = 140;
+const SURFACE_SPRING = 55;
 const WATER_DRAG = 0.91;
 const AIR_DRAG = 0.994;
-const LIFT_FACTOR = 1.8;
+const LIFT_FACTOR = 2.2;
 const MAX_SPEED = 24;
-const GRAVITY = 9.81;
-const ALIGN_TORQUE = 22;
-const INPUT_TORQUE = 11;
-const INPUT_ACCEL = 7.5;
+const ALIGN_TORQUE = 24;
+const INPUT_TORQUE = 9;
+const INPUT_ACCEL = 9;
 const POP_IMPULSE = 3.8;
-const RAIL_GRIP = 1.6;
+const RAIL_GRIP = 1.8;
+const MAX_SINK_SPEED = -1.8;
 
 const sampleOut = {
   height: 0,
@@ -32,7 +34,6 @@ const torqueAxis = new THREE.Vector3();
 const forward = new THREE.Vector3();
 const right = new THREE.Vector3();
 const vel = new THREE.Vector3();
-const slopeFlow = new THREE.Vector3();
 const downhill = new THREE.Vector3();
 
 type SamplePoint = { lx: number; lz: number; weight: number };
@@ -70,6 +71,7 @@ export function applySurfboardForces(
 
   let buoyancySum = 0;
   let avgHeight = 0;
+  let totalSubmersion = 0;
   const avgNormal = new THREE.Vector3();
   let submerged = false;
   let maxSteepness = 0;
@@ -86,6 +88,7 @@ export function applySurfboardForces(
 
     if (submersion > 0) {
       submerged = true;
+      totalSubmersion += submersion * point.weight;
       buoyancySum += submersion * BUOYANCY * point.weight * dt;
     }
   }
@@ -93,6 +96,14 @@ export function applySurfboardForces(
   const weightSum = SAMPLE_POINTS.reduce((s, p) => s + p.weight, 0);
   avgHeight /= weightSum;
   avgNormal.normalize();
+
+  const surfaceY = avgHeight + BOARD_HALF_HEIGHT;
+  const surfaceGap = surfaceY - pos.y;
+  if (surfaceGap > -0.35) {
+    submerged = true;
+    buoyancySum += BOARD_MASS * 9.81 * dt;
+    buoyancySum += surfaceGap * SURFACE_SPRING * dt;
+  }
 
   downhill.set(-avgNormal.x, 0, -avgNormal.z);
   if (downhill.lengthSq() > 0.0001) downhill.normalize();
@@ -107,12 +118,13 @@ export function applySurfboardForces(
     body.applyImpulse({ x: 0, y: buoyancySum, z: 0 }, true);
 
     const drag = WATER_DRAG - Math.abs(input.leanX) * 0.02;
+    let vy = linvel.y * (drag * 0.85 + 0.1);
+    if (vy < MAX_SINK_SPEED) vy = MAX_SINK_SPEED;
     body.setLinvel(
-      { x: linvel.x * drag, y: linvel.y * (drag * 0.85 + 0.1), z: linvel.z * drag },
+      { x: linvel.x * drag, y: vy, z: linvel.z * drag },
       true,
     );
 
-    slopeFlow.copy(avgNormal);
     if (downhill.lengthSq() > 0.0001) {
       const alignment = Math.max(vel.dot(downhill), 0);
       const lift = alignment * LIFT_FACTOR * dt;
@@ -152,7 +164,7 @@ export function applySurfboardForces(
   const leanTorque = INPUT_TORQUE * dt;
   body.applyTorqueImpulse(
     {
-      x: input.leanZ * leanTorque,
+      x: -input.leanZ * leanTorque * 0.35,
       y: -input.leanX * leanTorque * 1.6,
       z: input.leanX * leanTorque * 0.7,
     },
@@ -160,14 +172,27 @@ export function applySurfboardForces(
   );
 
   const accel = INPUT_ACCEL * dt;
-  body.applyImpulse(
-    {
-      x: (right.x * input.leanX + forward.x * input.leanZ) * accel,
-      y: 0,
-      z: (right.z * input.leanX + forward.z * input.leanZ) * accel,
-    },
-    true,
-  );
+  if (submerged && downhill.lengthSq() > 0.0001) {
+    const drive = input.leanZ * accel * 1.4;
+    body.applyImpulse(
+      { x: downhill.x * drive, y: 0, z: downhill.z * drive },
+      true,
+    );
+    const carve = input.leanX * accel;
+    body.applyImpulse(
+      { x: right.x * carve, y: 0, z: right.z * carve },
+      true,
+    );
+  } else {
+    body.applyImpulse(
+      {
+        x: (right.x * input.leanX + forward.x * input.leanZ) * accel,
+        y: 0,
+        z: (right.z * input.leanX + forward.z * input.leanZ) * accel,
+      },
+      true,
+    );
+  }
 
   if (input.popUp && submerged) {
     body.applyImpulse({ x: 0, y: POP_IMPULSE, z: 0 }, true);

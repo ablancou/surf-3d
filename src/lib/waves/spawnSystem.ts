@@ -1,5 +1,8 @@
-import { getActiveSpot } from "@/stores/spotStore";
+import { BOARD_HALF_HEIGHT } from "@/lib/physics/surfboardForces";
 import { sampleOcean, sampleOceanHeight } from "@/lib/waves/oceanSampler";
+import { getActiveSpot } from "@/stores/spotStore";
+
+const SPAWN_CLEARANCE = 0.14;
 
 export type SpawnPoint = {
   x: number;
@@ -31,7 +34,7 @@ export function findOptimalSpawn(time: number): SpawnPoint {
         const waterY = sampleOceanHeight(x, z, time);
         best = {
           x,
-          y: waterY + 0.5,
+          y: waterY + BOARD_HALF_HEIGHT + SPAWN_CLEARANCE,
           z,
           boost: 7 + Math.min(slope * 4, 5),
           quality: faceQuality,
@@ -52,7 +55,7 @@ export function findRespawnPoint(x: number, z: number, time: number): SpawnPoint
   const sample = sampleOcean(x, z, time);
   return {
     x,
-    y: waterY + 0.5,
+    y: waterY + BOARD_HALF_HEIGHT + SPAWN_CLEARANCE,
     z,
     boost: 4 + sample.steepness * 2,
     quality: sample.steepness,

@@ -1,10 +1,10 @@
 import { DEFAULT_INPUT, type GameInputState } from "./types";
 
 const KEY_MAP: Record<string, Partial<GameInputState>> = {
-  KeyW: { leanZ: -1 },
-  ArrowUp: { leanZ: -1 },
-  KeyS: { leanZ: 1 },
-  ArrowDown: { leanZ: 1 },
+  KeyW: { leanZ: 1 },
+  ArrowUp: { leanZ: 1 },
+  KeyS: { leanZ: -1 },
+  ArrowDown: { leanZ: -1 },
   KeyA: { leanX: -1 },
   ArrowLeft: { leanX: -1 },
   KeyD: { leanX: 1 },
@@ -115,7 +115,7 @@ export class InputManager {
     const ly = applyDeadzone(pad.axes[1] ?? 0, deadzone);
 
     this.gamepadLean.x = lx;
-    this.gamepadLean.y = ly;
+    this.gamepadLean.y = -ly;
 
     const rt = pad.buttons[7]?.value ?? 0;
     const a = pad.buttons[0]?.pressed ?? false;
@@ -154,7 +154,7 @@ export class InputManager {
     const dx = e.clientX - this.pointerOrigin.x;
     const dy = e.clientY - this.pointerOrigin.y;
     this.pointerLean.x = dx / 120;
-    this.pointerLean.y = dy / 120;
+    this.pointerLean.y = -dy / 120;
   };
 
   private onPointerUp = (e: PointerEvent) => {
@@ -184,7 +184,7 @@ export class InputManager {
     const dx = touch.clientX - this.touchOrigin.x;
     const dy = touch.clientY - this.touchOrigin.y;
     this.pointerLean.x = dx / 90;
-    this.pointerLean.y = dy / 90;
+    this.pointerLean.y = -dy / 90;
   };
 
   private onTouchEnd = (e: TouchEvent) => {
