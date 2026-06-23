@@ -11,33 +11,33 @@ export type TutorialStepId =
 export const TUTORIAL_STEPS: { id: TutorialStepId; title: string; body: string }[] = [
   {
     id: "welcome",
-    title: "Welcome to Surf 3D",
-    body: "Ride procedurally simulated waves. Use any input device — keyboard, touch, or Xbox controller.",
+    title: "Bienvenido a Surf 3D",
+    body: "Surfea olas simuladas en tiempo real. Usa teclado, táctil o mando de Xbox.",
   },
   {
     id: "carve",
-    title: "Carve the Wave",
-    body: "Press A/D or drag to lean into turns. Build speed by riding down the wave face.",
+    title: "Carve en la ola",
+    body: "Pulsa A/D o arrastra para inclinarte en los giros. Gana velocidad bajando la pared de la ola.",
   },
   {
     id: "pop",
-    title: "Pop Up",
-    body: "Press Space, RT, or release a touch drag to pop off the lip for aerials and floaters.",
+    title: "Pop / salto",
+    body: "Espacio, RT o suelta el arrastre táctil para saltar del lip y hacer aéreos.",
   },
   {
     id: "speed",
-    title: "Pump for Speed",
-    body: "Carve up and down the face to pump — speed unlocks bigger tricks and higher scores.",
+    title: "Pump para velocidad",
+    body: "Carve arriba y abajo en la pared para pump — más velocidad = mejores maniobras y puntuación.",
   },
   {
     id: "tube",
-    title: "Find the Barrel",
-    body: "Stay deep on a steep section for ~1 second to score a Tube Ride. Watch for the barrel overlay.",
+    title: "Busca el tubo",
+    body: "Mantente profundo en una sección empinada ~1 s para marcar Tube Ride. Mira el overlay del barril.",
   },
   {
     id: "done",
-    title: "You're Ready!",
-    body: "Chain tricks for combo multipliers. Wipeouts reset your combo — bail smart!",
+    title: "¡Listo para surfear!",
+    body: "Encadena maniobras para subir el combo. Un wipeout resetea el multiplicador — ¡baila con cabeza!",
   },
 ];
 

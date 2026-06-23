@@ -16,9 +16,9 @@ const LIFT_FACTOR = 2.2;
 const MAX_SPEED = 24;
 const ALIGN_TORQUE = 24;
 const INPUT_TORQUE = 9;
-const INPUT_ACCEL = 9;
+const INPUT_ACCEL = 10;
 const POP_IMPULSE = 3.8;
-const RAIL_GRIP = 1.8;
+const RAIL_GRIP = 2.1;
 const MAX_SINK_SPEED = -1.8;
 
 const sampleOut = {
@@ -173,7 +173,7 @@ export function applySurfboardForces(
 
   const accel = INPUT_ACCEL * dt;
   if (submerged && downhill.lengthSq() > 0.0001) {
-    const drive = input.leanZ * accel * 1.4;
+    const drive = input.leanZ * accel * 1.55;
     body.applyImpulse(
       { x: downhill.x * drive, y: 0, z: downhill.z * drive },
       true,

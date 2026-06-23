@@ -28,13 +28,15 @@ export function Ocean() {
   const waveMaterial = useMemo(
     () =>
       new THREE.MeshLambertMaterial({
-        color: "#38bdf8",
-        emissive: "#0c4a6e",
-        emissiveIntensity: 0.15,
+        color: spot.atmosphere.shallowWater,
+        emissive: spot.atmosphere.deepWater,
+        emissiveIntensity: 0.12,
         side: THREE.DoubleSide,
       }),
     [spot.id],
   );
+
+  const computeNormals = useSettingsStore((s) => s.perfTier !== "low");
 
   useEffect(() => {
     setOceanMode("gerstner");
@@ -68,7 +70,7 @@ export function Ocean() {
     }
 
     pos.needsUpdate = true;
-    geo.computeVertexNormals();
+    if (computeNormals) geo.computeVertexNormals();
   });
 
   return (

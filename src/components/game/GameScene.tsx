@@ -16,7 +16,7 @@ import { Surfboard } from "@/components/game/Surfboard";
 import { gameClock } from "@/lib/game/clock";
 import { InputManager } from "@/lib/input/InputManager";
 import { getActiveSpot } from "@/stores/spotStore";
-
+import { useSettingsStore } from "@/stores/settingsStore";
 
 type GameSceneProps = {
   inputManager: InputManager;
@@ -27,6 +27,7 @@ export function GameScene({ inputManager }: GameSceneProps) {
   const boardRotation = useRef(new THREE.Quaternion());
   const particlesRef = useRef<SprayParticlesHandle>(null);
   const spot = getActiveSpot();
+  const fogFar = useSettingsStore((s) => s.perf.fogFar);
 
   const onTransform = useMemo(
     () => (position: THREE.Vector3, rotation: THREE.Quaternion) => {
@@ -43,7 +44,10 @@ export function GameScene({ inputManager }: GameSceneProps) {
 
   return (
     <>
-      <fog attach="fog" args={[spot.atmosphere.fogColor, spot.atmosphere.fogNear, spot.atmosphere.fogFar * 1.35]} />
+      <fog
+        attach="fog"
+        args={[spot.atmosphere.fogColor, spot.atmosphere.fogNear, Math.min(spot.atmosphere.fogFar, fogFar)]}
+      />
       <hemisphereLight args={["#d4ecff", spot.atmosphere.shallowWater, 0.85]} />
       <ambientLight intensity={0.62} />
       <directionalLight intensity={2.4} position={[40, 60, 20]} />

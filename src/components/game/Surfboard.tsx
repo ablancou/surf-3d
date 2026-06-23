@@ -91,7 +91,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
         void finalizeRun(replayRecorder.current);
       }
       wipeoutTimer.current += dt;
-      if (wipeoutTimer.current > 1.6) {
+      if (wipeoutTimer.current > 1.35) {
         const pos = body.translation();
         respawn(body, pos.x, pos.z);
         wipeoutTimer.current = 0;

@@ -43,10 +43,10 @@ export function TutorialOverlay() {
         <p className="mb-6 text-sm leading-relaxed text-white/80">{step.body}</p>
         <div className="flex gap-3">
           <Button className="flex-1" onClick={advance}>
-            {isLast ? "Start Surfing!" : "Next"}
+            {isLast ? "¡A surfear!" : "Siguiente"}
           </Button>
           <Button variant="ghost" className="text-white/60 hover:text-white" onClick={skip}>
-            Skip
+            Saltar
           </Button>
         </div>
         {stepIndex === 0 && (
@@ -55,7 +55,7 @@ export function TutorialOverlay() {
             className="mt-3 w-full text-center text-xs text-white/40 hover:text-white/60"
             onClick={start}
           >
-            Restart tutorial
+            Reiniciar tutorial
           </button>
         )}
       </div>

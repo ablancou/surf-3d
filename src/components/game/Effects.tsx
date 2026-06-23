@@ -4,7 +4,7 @@ import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import { useSettingsStore } from "@/stores/settingsStore";
 
 export function Effects() {
-  const enabled = false && useSettingsStore((s) => s.perf.enableEffects);
+  const enabled = useSettingsStore((s) => s.perf.enableEffects);
   if (!enabled) return null;
 
   return (

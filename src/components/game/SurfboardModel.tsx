@@ -43,7 +43,7 @@ export function SurfboardModel() {
       new THREE.MeshStandardMaterial({
         color: DECK_WHITE,
         emissive: BLUE_LIGHT,
-        emissiveIntensity: 0.18,
+        emissiveIntensity: 0.28,
         roughness: 0.28,
         metalness: 0.06,
       }),
@@ -82,11 +82,11 @@ export function SurfboardModel() {
     const carveBank = tiltX * 0.15;
 
     group.rotation.z = carveBank + flex * 0.3;
-    deckMaterial.emissiveIntensity = inTube ? 0.28 : 0.18 + speed * 0.01;
+    deckMaterial.emissiveIntensity = inTube ? 0.38 : 0.28 + speed * 0.012;
   });
 
   return (
-    <group ref={groupRef} scale={1.55}>
+    <group ref={groupRef} scale={1.7}>
       <mesh geometry={geometry} material={deckMaterial} />
       <mesh position={[0, -0.04, 0]} rotation={[-Math.PI / 2, 0, 0]} material={hullMaterial}>
         <planeGeometry args={[0.46, 2.05]} />

@@ -80,7 +80,7 @@ export function CameraRig({ targetPosition, targetRotation }: CameraRigProps) {
       snapped.current = true;
     }
 
-    const followRate = state.wipedOut ? 14 : 5.5;
+    const followRate = state.wipedOut ? 16 : 5.5;
     const t = 1 - Math.exp(-followRate * delta);
     smoothPos.current.lerp(desiredPosition, t);
     smoothLook.current.lerp(desiredLookAt, t * 0.85);
