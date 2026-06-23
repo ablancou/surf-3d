@@ -158,6 +158,32 @@ export function emitLandingSplash(
   });
 }
 
+export function emitPumpSpray(
+  particles: SprayParticlesHandle | null,
+  position: THREE.Vector3,
+  rotation: THREE.Quaternion,
+  speed: number,
+  leanZ: number,
+) {
+  if (!particles) return;
+  orientBasis(rotation);
+  const pumpingUp = leanZ < 0;
+  emitPos.copy(position).addScaledVector(forward, pumpingUp ? 0.35 : -0.45);
+  emitVel.copy(forward).multiplyScalar(pumpingUp ? speed * 0.15 : -speed * 0.1);
+  emitVel.y = pumpingUp ? 1.2 : 0.5;
+
+  particles.emit({
+    kind: "foam",
+    position: emitPos,
+    velocity: emitVel,
+    count: Math.floor(3 + speed * 0.25),
+    spread: 0.35,
+    speed: 1.5,
+    size: 0.12,
+    life: 0.45,
+  });
+}
+
 export function emitAirborneMist(
   particles: SprayParticlesHandle | null,
   position: THREE.Vector3,

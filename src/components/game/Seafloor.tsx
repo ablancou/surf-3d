@@ -6,32 +6,28 @@ import * as THREE from "three";
 import { boardVisualState } from "@/lib/game/boardVisualState";
 import { OCEAN_SIZE } from "@/lib/waves/waveConfig";
 import { useSpotStore } from "@/stores/spotStore";
-import { useSettingsStore } from "@/stores/settingsStore";
 
-/** Flat plane that follows the rider and receives board shadows (GPU ocean has no shadow map in shader). */
-export function ShadowReceiver() {
+export function Seafloor() {
   const meshRef = useRef<THREE.Mesh>(null);
-  const enableShadows = useSettingsStore((s) => s.perf.enableShadows);
   const spot = useSpotStore((s) => s.spot);
 
-  const material = useMemo(
-    () =>
-      new THREE.MeshLambertMaterial({
-        color: spot.atmosphere.deepWater,
-        transparent: true,
-        opacity: 0.01,
-        depthWrite: false,
-      }),
-    [spot.id],
-  );
+  const material = useMemo(() => {
+    const shallow = new THREE.Color(spot.atmosphere.shallowWater);
+    const sand = new THREE.Color(
+      spot.id === "pipeline" ? "#4a3528" : spot.id === "beach_break" ? "#c9a66b" : "#8a7355",
+    );
+    return new THREE.MeshStandardMaterial({
+      color: shallow.clone().lerp(sand, 0.62),
+      roughness: 0.95,
+      metalness: 0.02,
+    });
+  }, [spot.id, spot.atmosphere.shallowWater]);
 
   useFrame(() => {
     const mesh = meshRef.current;
     if (!mesh) return;
-    mesh.position.set(boardVisualState.x, -0.05, boardVisualState.z);
+    mesh.position.set(boardVisualState.x, -6.5, boardVisualState.z);
   });
-
-  if (!enableShadows) return null;
 
   return (
     <mesh ref={meshRef} rotation-x={-Math.PI / 2} frustumCulled={false} receiveShadow material={material}>

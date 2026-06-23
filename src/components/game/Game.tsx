@@ -12,6 +12,7 @@ import { LeaderboardPanel } from "@/components/ui/LeaderboardPanel";
 import { MultiplayerPanel } from "@/components/ui/MultiplayerPanel";
 import { SpotSelector } from "@/components/ui/SpotSelector";
 import { ComboBanner } from "@/components/ui/ComboBanner";
+import { AerialOverlay } from "@/components/ui/AerialOverlay";
 import { SpeedStreaks } from "@/components/ui/SpeedStreaks";
 import { TrickPopups } from "@/components/ui/TrickPopups";
 import { TutorialOverlay } from "@/components/ui/TutorialOverlay";
@@ -96,6 +97,7 @@ export function Game() {
       <TrickPopups />
       <ComboBanner />
       <SpeedStreaks />
+      <AerialOverlay />
       <TubeOverlay />
       <WipeoutOverlay />
       <ControlsOverlay />

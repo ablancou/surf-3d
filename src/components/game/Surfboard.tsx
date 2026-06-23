@@ -18,6 +18,7 @@ import {
   emitPopSpray,
   emitTubeSpray,
   emitLandingSplash,
+  emitPumpSpray,
   emitTrickSpray,
   emitWipeoutSplash,
 } from "@/lib/particles/emitters";
@@ -55,6 +56,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
   const popCooldown = useRef(0);
   const wipeoutTimer = useRef(0);
   const lastCarveSound = useRef(0);
+  const lastPumpSpray = useRef(0);
   const spawned = useRef(false);
   const replayRecorder = useRef(new ReplayRecorder());
   const trickCountRef = useRef(0);
@@ -63,6 +65,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
   const wasInTube = useRef(false);
 
   const setSpeed = useGameStore((s) => s.setSpeed);
+  const setAirTime = useGameStore((s) => s.setAirTime);
   const setRiding = useGameStore((s) => s.setRiding);
   const setTubeState = useGameStore((s) => s.setTubeState);
   const addRideScore = useGameStore((s) => s.addRideScore);
@@ -151,6 +154,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
     }
 
     setSpeed(result.speed);
+    setAirTime(airTimeRef.current);
     setRiding(result.submerged);
 
     useLeaderboardStore.getState().trackSession({
@@ -262,6 +266,16 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
         audioEngine.playCarve(Math.min(1, result.speed / 10));
         lastCarveSound.current = gameClock.time;
       }
+    }
+
+    if (
+      result.submerged &&
+      result.speed > 3.5 &&
+      Math.abs(inputManager.state.leanZ) > 0.28 &&
+      gameClock.time - lastPumpSpray.current > 0.14
+    ) {
+      emitPumpSpray(particles, boardPosition, boardRotation, result.speed, inputManager.state.leanZ);
+      lastPumpSpray.current = gameClock.time;
     }
 
     popCooldown.current = Math.max(0, popCooldown.current - dt);

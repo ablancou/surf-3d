@@ -12,6 +12,7 @@ type GameStore = {
   combo: number;
   multiplier: number;
   comboExpiresAt: number;
+  airTime: number;
   riding: boolean;
   inTube: boolean;
   tubeDepth: number;
@@ -20,7 +21,9 @@ type GameStore = {
   cameraShake: number;
   trickPopups: TrickPopup[];
   setSpeed: (speed: number) => void;
+  setAirTime: (airTime: number) => void;
   setRiding: (riding: boolean) => void;
+  resetRide: () => void;
   setTubeState: (inTube: boolean, tubeDepth: number) => void;
   addTubeScore: (points: number) => void;
   addRideScore: (points: number) => void;
@@ -42,6 +45,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   combo: 0,
   multiplier: 1,
   comboExpiresAt: 0,
+  airTime: 0,
   riding: false,
   inTube: false,
   tubeDepth: 0,
@@ -51,7 +55,24 @@ export const useGameStore = create<GameStore>((set, get) => ({
   trickPopups: [],
 
   setSpeed: (speed) => set({ speed }),
+  setAirTime: (airTime) => set({ airTime }),
   setRiding: (riding) => set({ riding }),
+  resetRide: () =>
+    set({
+      speed: 0,
+      score: 0,
+      combo: 0,
+      multiplier: 1,
+      comboExpiresAt: 0,
+      airTime: 0,
+      riding: false,
+      inTube: false,
+      tubeDepth: 0,
+      wipedOut: false,
+      wipeoutReason: null,
+      cameraShake: 0,
+      trickPopups: [],
+    }),
   setTubeState: (inTube, tubeDepth) => set({ inTube, tubeDepth }),
   addTubeScore: (points) => {
     if (get().wipedOut || points <= 0) return;

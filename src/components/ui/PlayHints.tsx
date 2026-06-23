@@ -17,9 +17,17 @@ function pickHint(
   riding: boolean,
   inTube: boolean,
   combo: number,
+  airTime: number,
   mobile: boolean,
   spotTagline: string,
 ): Hint {
+  if (!riding && airTime > 0.2) {
+    return {
+      id: "air",
+      text: bigAirHint(airTime),
+      detail: "Aterriza limpio para marcar el aéreo",
+    };
+  }
   if (inTube) {
     return {
       id: "tube",
@@ -27,11 +35,11 @@ function pickHint(
       detail: mobile ? "Usa el pad izquierdo con calma" : "Mantén velocidad y profundidad",
     };
   }
-  if (combo >= 3) {
+  if (combo >= 2) {
     return {
       id: "combo",
-      text: `Combo x${combo} — encadena maniobras`,
-      detail: "Carve, pump y aéreos suben el multiplicador",
+      text: `Combo x${combo} — encadena antes de que expire`,
+      detail: "Tienes ~5 s entre maniobras para mantener el multiplicador",
     };
   }
   if (!riding && speed < 2) {
@@ -87,17 +95,24 @@ function pickHint(
       };
 }
 
+function bigAirHint(airTime: number) {
+  if (airTime > 0.7) return "¡Mucho hang time!";
+  if (airTime > 0.35) return "Buen despegue — prepárate para aterrizar";
+  return "En el aire — controla el aterrizaje";
+}
+
 export function PlayHints() {
   const tutorialActive = useTutorialStore((s) => s.active);
   const speed = useGameStore((s) => s.speed);
   const riding = useGameStore((s) => s.riding);
   const inTube = useGameStore((s) => s.inTube);
   const combo = useGameStore((s) => s.combo);
+  const airTime = useGameStore((s) => s.airTime);
   const spotTagline = useSpotStore((s) => s.spot.tagline);
   const [faded, setFaded] = useState(false);
   const [mobile] = useState(() => isCoarsePointer());
 
-  const hint = pickHint(speed, riding, inTube, combo, mobile, spotTagline);
+  const hint = pickHint(speed, riding, inTube, combo, airTime, mobile, spotTagline);
 
   useEffect(() => {
     if (speed > 12 && combo < 2) {

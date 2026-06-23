@@ -37,7 +37,7 @@ export const TUTORIAL_STEPS: { id: TutorialStepId; title: string; body: string }
   {
     id: "done",
     title: "¡Listo para surfear!",
-    body: "Encadena maniobras para subir el combo. Un wipeout resetea el multiplicador — ¡baila con cabeza!",
+    body: "Encadena maniobras en ~5 s para subir el combo. Un wipeout o cambiar de spot resetea la ronda.",
   },
 ];
 

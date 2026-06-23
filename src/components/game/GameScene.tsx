@@ -9,6 +9,7 @@ import { CameraRig } from "@/components/game/CameraRig";
 import { Effects } from "@/components/game/Effects";
 import { OceanSystem } from "@/components/game/OceanSystem";
 import { SceneLighting } from "@/components/game/SceneLighting";
+import { Seafloor } from "@/components/game/Seafloor";
 import { ShadowReceiver } from "@/components/game/ShadowReceiver";
 import { RemoteSurfers } from "@/components/game/RemoteSurfers";
 import { ReplayGhosts } from "@/components/game/ReplayGhost";
@@ -55,6 +56,7 @@ export function GameScene({ inputManager }: GameSceneProps) {
 
       <Sky />
       <OceanSystem />
+      <Seafloor />
       <ShadowReceiver />
       <CameraRig
         targetPosition={boardPosition.current}
