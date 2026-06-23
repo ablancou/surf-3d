@@ -16,14 +16,14 @@ export type TrickEvent = {
 };
 
 export const TRICK_LABELS: Record<TrickId, string> = {
-  carve_left: "Carve Left",
-  carve_right: "Carve Right",
-  pumping: "Pumping",
-  bottom_turn: "Bottom Turn",
+  carve_left: "Carve izquierda",
+  carve_right: "Carve derecha",
+  pumping: "Pump",
+  bottom_turn: "Bottom turn",
   cutback: "Cutback",
   floater: "Floater",
-  aerial: "Aerial",
-  tube_ride: "Tube Ride",
+  aerial: "Aéreo",
+  tube_ride: "Tubo",
 };
 
 export const TRICK_POINTS: Record<TrickId, number> = {

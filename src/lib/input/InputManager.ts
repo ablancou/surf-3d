@@ -24,6 +24,7 @@ export class InputManager {
   private touchOrigin = { x: 0, y: 0 };
   private gamepadLean = { x: 0, y: 0 };
   private gamepadPop = false;
+  private smoothLean = { x: 0, z: 0 };
   private bound = false;
 
   bind(el: HTMLElement) {
@@ -99,8 +100,13 @@ export class InputManager {
 
     if (this.gamepadPop) this.state.popUp = true;
 
-    this.state.leanX = clamp(this.state.leanX);
-    this.state.leanZ = clamp(this.state.leanZ);
+    const targetX = clamp(this.state.leanX);
+    const targetZ = clamp(this.state.leanZ);
+    const smooth = 0.24;
+    this.smoothLean.x += (targetX - this.smoothLean.x) * smooth;
+    this.smoothLean.z += (targetZ - this.smoothLean.z) * smooth;
+    this.state.leanX = this.smoothLean.x;
+    this.state.leanZ = this.smoothLean.z;
   }
 
   private pollGamepad() {
@@ -138,6 +144,8 @@ export class InputManager {
     this.gamepadLean.x = 0;
     this.gamepadLean.y = 0;
     this.gamepadPop = false;
+    this.smoothLean.x = 0;
+    this.smoothLean.z = 0;
   };
 
   private onPointerDown = (e: PointerEvent) => {

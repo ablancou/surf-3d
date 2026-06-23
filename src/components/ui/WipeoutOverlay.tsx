@@ -3,9 +3,9 @@
 import { useGameStore } from "@/stores/gameStore";
 
 const REASON_LABELS = {
-  nose_dive: "Nose Dive!",
-  rail_bury: "Rail Buried!",
-  bail: "Wipeout!",
+  nose_dive: "¡Nariz bajo!",
+  rail_bury: "¡Rail enterrado!",
+  bail: "¡Wipeout!",
 } as const;
 
 export function WipeoutOverlay() {
@@ -20,7 +20,7 @@ export function WipeoutOverlay() {
         <p className="text-5xl font-black text-red-200 drop-shadow-lg md:text-7xl">
           {REASON_LABELS[reason]}
         </p>
-        <p className="mt-3 text-lg text-white/80">Combo reset — respawning...</p>
+        <p className="mt-3 text-lg text-white/80">Combo reseteado — reentrando...</p>
       </div>
     </div>
   );

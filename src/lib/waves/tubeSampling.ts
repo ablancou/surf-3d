@@ -74,11 +74,11 @@ export function sampleTubeGeometry(
 
   const inTube =
     submerged &&
-    speed > 3.5 &&
-    steepness > 0.32 &&
-    enclosure > 0.25 &&
-    lipOverhead > 0.35 &&
-    boardForward.dot(downhill) > 0.2;
+    speed > 3 &&
+    steepness > 0.28 &&
+    enclosure > 0.18 &&
+    lipOverhead > 0.22 &&
+    boardForward.dot(downhill) > 0.15;
 
   return { enclosure, lipOverhead, pocketDepth, inTube };
 }

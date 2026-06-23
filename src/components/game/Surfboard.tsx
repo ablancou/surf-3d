@@ -54,6 +54,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
   const replayRecorder = useRef(new ReplayRecorder());
   const trickCountRef = useRef(0);
   const runHandled = useRef(false);
+  const spawnGrace = useRef(0);
 
   const setSpeed = useGameStore((s) => s.setSpeed);
   const setRiding = useGameStore((s) => s.setRiding);
@@ -78,6 +79,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
 
     if (!spawned.current) {
       respawnAtBest(body);
+      spawnGrace.current = 2.8;
       spawned.current = true;
       replayRecorder.current.start(gameClock.time);
       trickCountRef.current = 0;
@@ -94,6 +96,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
       if (wipeoutTimer.current > 1.35) {
         const pos = body.translation();
         respawn(body, pos.x, pos.z);
+        spawnGrace.current = 2.2;
         wipeoutTimer.current = 0;
         clearWipeout();
         wipeoutDetector.current.resetCooldown();
@@ -123,6 +126,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
       const airTooLong = airTimeRef.current > 3.2 && pos.y < waterY + 1.5;
       if (fellThrough || airTooLong) {
         respawn(body, pos.x, pos.z);
+        spawnGrace.current = 2.2;
         airTimeRef.current = 0;
         setSpeed(0);
         setRiding(true);
@@ -140,10 +144,6 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
       maxSpeed: result.speed,
       trickCount: trickCountRef.current,
     });
-
-    if (result.submerged && result.speed > 1.5) {
-      addRideScore(result.speed * dt * 2);
-    }
 
     const telemetry = buildRiderTelemetry(
       body,
@@ -163,6 +163,11 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
     boardVisualState.z = pos.z;
 
     setTubeState(telemetry.inTube, telemetry.tubeDepth);
+
+    if (result.submerged && result.speed > 1.5) {
+      const rideRate = telemetry.inTube ? 3.2 : 2.4;
+      addRideScore(result.speed * dt * rideRate);
+    }
 
     if (telemetry.inTube) {
       addTubeScore(telemetry.tubeDepth * dt * 80);
@@ -198,7 +203,12 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
       emitCarveSpray(particles, boardPosition, boardRotation, telemetry);
     }
 
-    const wipeout = wipeoutDetector.current.update(telemetry, gameClock.time, dt);
+    spawnGrace.current = Math.max(0, spawnGrace.current - dt);
+
+    const wipeout =
+      spawnGrace.current <= 0
+        ? wipeoutDetector.current.update(telemetry, gameClock.time, dt)
+        : null;
     if (wipeout) {
       triggerWipeout(wipeout.reason);
       emitWipeoutSplash(particles, boardPosition, result.speed);
@@ -313,18 +323,24 @@ async function finalizeRun(recorder: ReplayRecorder) {
   }
 }
 
-function respawnAtBest(body: RapierRigidBody) {
-  const spawn = findOptimalSpawn(gameClock.time);
+function applySpawn(body: RapierRigidBody, spawn: ReturnType<typeof findOptimalSpawn>) {
+  const halfYaw = spawn.yaw * 0.5;
+  const sin = Math.sin(halfYaw);
+  const cos = Math.cos(halfYaw);
+
   body.setTranslation({ x: spawn.x, y: spawn.y, z: spawn.z }, true);
-  body.setRotation({ x: 0, y: 0, z: 0, w: 1 }, true);
-  body.setLinvel({ x: 0, y: 0, z: spawn.boost }, true);
+  body.setRotation({ x: 0, y: sin, z: 0, w: cos }, true);
+  body.setLinvel(
+    { x: spawn.downhillX * spawn.boost, y: 0, z: spawn.downhillZ * spawn.boost },
+    true,
+  );
   body.setAngvel({ x: 0, y: 0, z: 0 }, true);
 }
 
+function respawnAtBest(body: RapierRigidBody) {
+  applySpawn(body, findOptimalSpawn(gameClock.time));
+}
+
 function respawn(body: RapierRigidBody, x: number, z: number) {
-  const spawn = findRespawnPoint(x, z, gameClock.time);
-  body.setTranslation({ x: spawn.x, y: spawn.y, z: spawn.z }, true);
-  body.setRotation({ x: 0, y: 0, z: 0, w: 1 }, true);
-  body.setLinvel({ x: 0, y: 0, z: spawn.boost }, true);
-  body.setAngvel({ x: 0, y: 0, z: 0 }, true);
+  applySpawn(body, findRespawnPoint(x, z, gameClock.time));
 }

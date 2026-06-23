@@ -65,7 +65,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   registerTrick: (trick) =>
     set((s) => {
       const combo = Math.min(s.combo + 1, 99);
-      const multiplier = 1 + combo * 0.15;
+      const multiplier = 1 + combo * 0.18;
       return {
         combo,
         multiplier,

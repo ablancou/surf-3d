@@ -19,6 +19,9 @@ const INPUT_TORQUE = 9;
 const INPUT_ACCEL = 10;
 const POP_IMPULSE = 3.8;
 const RAIL_GRIP = 2.1;
+const TRIM_FACTOR = 1.1;
+const PUMP_FACTOR = 2.4;
+const TUBE_GRIP = 1.4;
 const MAX_SINK_SPEED = -1.8;
 
 const sampleOut = {
@@ -108,6 +111,8 @@ export function applySurfboardForces(
   downhill.set(-avgNormal.x, 0, -avgNormal.z);
   if (downhill.lengthSq() > 0.0001) downhill.normalize();
   const downhillSpeed = vel.dot(downhill);
+  const faceAlignment = forward.dot(downhill);
+  let speed = Math.sqrt(linvel.x ** 2 + linvel.z ** 2);
 
   if (wipedOut) {
     body.applyImpulse({ x: 0, y: -2 * dt, z: 0 }, true);
@@ -137,12 +142,28 @@ export function applySurfboardForces(
         },
         true,
       );
+
+      if (faceAlignment > 0.45 && Math.abs(input.leanX) < 0.35) {
+        const trim = faceAlignment * TRIM_FACTOR * dt;
+        body.applyImpulse({ x: downhill.x * trim, y: 0, z: downhill.z * trim }, true);
+      }
+
+      if (downhillSpeed < -0.6 && input.leanZ > 0.2) {
+        const pump = input.leanZ * PUMP_FACTOR * dt;
+        body.applyImpulse({ x: downhill.x * pump, y: 0, z: downhill.z * pump }, true);
+      }
+
+      if (speed < 5.5 && faceAlignment > 0.35) {
+        const glide = (5.5 - speed) * 0.35 * faceAlignment * dt;
+        body.applyImpulse({ x: downhill.x * glide, y: 0, z: downhill.z * glide }, true);
+      }
     }
 
     boardUp.set(0, 1, 0).applyQuaternion(rotation);
     targetUp.copy(avgNormal);
     torqueAxis.crossVectors(boardUp, targetUp);
-    const alignStrength = torqueAxis.length() * ALIGN_TORQUE * dt;
+    const tubeGrip = maxSteepness > 0.34 && faceAlignment > 0.45 ? TUBE_GRIP : 1;
+    const alignStrength = torqueAxis.length() * ALIGN_TORQUE * tubeGrip * dt;
     if (alignStrength > 0.0001) {
       torqueAxis.normalize();
       body.applyTorqueImpulse(
@@ -178,7 +199,8 @@ export function applySurfboardForces(
       { x: downhill.x * drive, y: 0, z: downhill.z * drive },
       true,
     );
-    const carve = input.leanX * accel;
+    const carveScale = Math.max(0.5, 1 - speed / 30);
+    const carve = input.leanX * accel * carveScale;
     body.applyImpulse(
       { x: right.x * carve, y: 0, z: right.z * carve },
       true,
@@ -198,7 +220,7 @@ export function applySurfboardForces(
     body.applyImpulse({ x: 0, y: POP_IMPULSE, z: 0 }, true);
   }
 
-  let speed = Math.sqrt(linvel.x ** 2 + linvel.z ** 2);
+  speed = Math.sqrt(linvel.x ** 2 + linvel.z ** 2);
   if (speed > MAX_SPEED) {
     const scale = MAX_SPEED / speed;
     body.setLinvel({ x: linvel.x * scale, y: linvel.y, z: linvel.z * scale }, true);

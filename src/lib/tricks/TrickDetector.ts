@@ -83,13 +83,13 @@ export class TrickDetector {
   }
 
   private detectCarve(t: RiderTelemetry, time: number, dt: number): TrickEvent | null {
-    if (!t.submerged || t.speed < 3.5) {
+    if (!t.submerged || t.speed < 3) {
       this.carveState = "none";
       return null;
     }
 
-    const carvingLeft = t.tiltX < -0.3 && Math.abs(t.angularVelocityZ) > 0.6 && t.leanX < -0.15;
-    const carvingRight = t.tiltX > 0.3 && Math.abs(t.angularVelocityZ) > 0.6 && t.leanX > 0.15;
+    const carvingLeft = t.tiltX < -0.22 && Math.abs(t.angularVelocityZ) > 0.45 && t.leanX < -0.12;
+    const carvingRight = t.tiltX > 0.22 && Math.abs(t.angularVelocityZ) > 0.45 && t.leanX > 0.12;
 
     if (carvingLeft) {
       this.carveState = "left";
@@ -127,7 +127,7 @@ export class TrickDetector {
     const uphill = recent.filter((s) => s.downhillSpeed < -0.5).length >= 4;
     const accel = recent.slice(-4).every((s, i, arr) => i === 0 || s.speed >= arr[i - 1].speed - 0.2);
 
-    if (speedGain > 1.8 && uphill && accel && t.speed > 4) {
+    if (speedGain > 1.4 && uphill && accel && t.speed > 3.5) {
       return this.emit("pumping", time, 0.9);
     }
     return null;
