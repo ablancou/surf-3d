@@ -1,52 +1,39 @@
 "use client";
 
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { boardVisualState } from "@/lib/game/boardVisualState";
 import { gameClock } from "@/lib/game/clock";
-import { oceanFragmentShader, oceanVertexShader } from "@/lib/waves/oceanShader";
-import { MAX_WAVES, OCEAN_SIZE } from "@/lib/waves/waveConfig";
+import { sampleGerstnerWaves } from "@/lib/waves/gerstner";
+import { OCEAN_SIZE } from "@/lib/waves/waveConfig";
 import { bindOceanSimulator, setOceanMode } from "@/lib/waves/oceanSampler";
 import { getActiveSpot, getActiveWaves } from "@/stores/spotStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 
-function buildWaveUniforms() {
-  const waves = getActiveWaves();
-  const waveA = Array.from({ length: MAX_WAVES }, () => new THREE.Vector4());
-  const waveB = Array.from({ length: MAX_WAVES }, () => new THREE.Vector4());
-
-  for (let i = 0; i < MAX_WAVES; i++) {
-    const w = waves[i];
-    if (!w) continue;
-    waveA[i].set(w.amplitude, w.wavelength, w.speed, w.steepness);
-    waveB[i].set(Math.cos(w.direction), Math.sin(w.direction), 0, 0);
-  }
-
-  return { waveA, waveB };
-}
-
 export function Ocean() {
-  const { camera } = useThree();
   const groupRef = useRef<THREE.Group>(null);
-  const materialRef = useRef<THREE.ShaderMaterial>(null);
   const segments = useSettingsStore((s) => s.perf.oceanSegments);
   const spot = getActiveSpot();
-  const waveUniforms = useMemo(() => buildWaveUniforms(), [spot.id]);
 
-  const uniforms = useMemo(
-    () => ({
-      uTime: { value: 0 },
-      uWaveA: { value: waveUniforms.waveA },
-      uWaveB: { value: waveUniforms.waveB },
-      uDeepColor: { value: new THREE.Color(spot.atmosphere.deepWater) },
-      uShallowColor: { value: new THREE.Color(spot.atmosphere.shallowWater) },
-      uFoamColor: { value: new THREE.Color("#e8f4f8") },
-      uSunDirection: { value: new THREE.Vector3(0.6, 0.85, 0.3).normalize() },
-      uCameraPosition: { value: new THREE.Vector3() },
-      uFoamThreshold: { value: 0.28 },
-    }),
-    [waveUniforms, spot.id],
+  const baseMaterial = useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        color: spot.atmosphere.shallowWater,
+        toneMapped: false,
+      }),
+    [spot.id],
+  );
+
+  const waveMaterial = useMemo(
+    () =>
+      new THREE.MeshLambertMaterial({
+        color: spot.atmosphere.shallowWater,
+        emissive: spot.atmosphere.deepWater,
+        emissiveIntensity: 0.08,
+        side: THREE.DoubleSide,
+      }),
+    [spot.id],
   );
 
   useEffect(() => {
@@ -61,29 +48,36 @@ export function Ocean() {
 
     group.position.set(boardVisualState.x, 0, boardVisualState.z);
 
-    const mat = materialRef.current;
-    if (!mat) return;
-    mat.uniforms.uTime.value = gameClock.time;
-    mat.uniforms.uCameraPosition.value.copy(camera.position);
-  });
+    const waveMesh = group.children[1] as THREE.Mesh | undefined;
+    if (!waveMesh) return;
 
-  const shallow = spot.atmosphere.shallowWater;
+    const geo = waveMesh.geometry as THREE.PlaneGeometry;
+    const pos = geo.attributes.position as THREE.BufferAttribute;
+    const waves = getActiveWaves();
+    const bx = boardVisualState.x;
+    const bz = boardVisualState.z;
+    const time = gameClock.time;
+
+    for (let i = 0; i < pos.count; i++) {
+      const lx = pos.getX(i);
+      const ly = pos.getY(i);
+      const wx = lx + bx;
+      const wz = -ly + bz;
+      const sample = sampleGerstnerWaves(wx, wz, time, waves);
+      pos.setZ(i, sample.height);
+    }
+
+    pos.needsUpdate = true;
+    geo.computeVertexNormals();
+  });
 
   return (
     <group ref={groupRef}>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} frustumCulled={false}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} frustumCulled={false} material={baseMaterial}>
         <planeGeometry args={[OCEAN_SIZE, OCEAN_SIZE, 1, 1]} />
-        <meshBasicMaterial color={shallow} toneMapped={false} />
       </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} frustumCulled={false}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} frustumCulled={false} material={waveMaterial}>
         <planeGeometry args={[OCEAN_SIZE, OCEAN_SIZE, segments, segments]} />
-        <shaderMaterial
-          ref={materialRef}
-          vertexShader={oceanVertexShader}
-          fragmentShader={oceanFragmentShader}
-          uniforms={uniforms}
-          side={THREE.FrontSide}
-        />
       </mesh>
     </group>
   );
