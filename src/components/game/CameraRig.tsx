@@ -8,7 +8,9 @@ import { useGameStore } from "@/stores/gameStore";
 
 const BASE_FOV = 62;
 const TUBE_FOV = 54;
-const CAMERA_DISTANCE = 8.5;
+const AERIAL_FOV = 68;
+const BASE_DISTANCE = 8.5;
+const AERIAL_DISTANCE = 10.5;
 const LOOK_AHEAD = 13;
 
 type CameraRigProps = {
@@ -40,7 +42,15 @@ export function CameraRig({ targetPosition, targetRotation }: CameraRigProps) {
     }
     wasWipedOut.current = state.wipedOut;
 
-    const targetFov = state.inTube ? TUBE_FOV : BASE_FOV;
+    const airborne = boardVisualState.airborne;
+    const airTime = boardVisualState.airTime;
+    const speed = boardVisualState.speed;
+    const speedBoost = Math.min(1, Math.max(0, (speed - 10) / 8));
+
+    let targetFov = state.inTube ? TUBE_FOV : BASE_FOV;
+    if (airborne) targetFov = AERIAL_FOV;
+    else if (speedBoost > 0) targetFov += speedBoost * 4;
+
     if ("fov" in camera) {
       const persp = camera as THREE.PerspectiveCamera;
       persp.fov += (targetFov - persp.fov) * Math.min(1, delta * 4);
@@ -56,11 +66,15 @@ export function CameraRig({ targetPosition, targetRotation }: CameraRigProps) {
     const ty = boardVisualState.y;
     const tz = boardVisualState.z;
 
-    cameraOffset.copy(forward).multiplyScalar(-CAMERA_DISTANCE);
-    cameraOffset.y = 5.2;
+    const camDistance = airborne
+      ? AERIAL_DISTANCE + Math.min(1.5, airTime * 0.8)
+      : BASE_DISTANCE - speedBoost * 0.8;
+
+    cameraOffset.copy(forward).multiplyScalar(-camDistance);
+    cameraOffset.y = airborne ? 6.2 + airTime * 0.6 : 5.2 + speedBoost * 0.5;
 
     lookOffset.copy(forward).multiplyScalar(LOOK_AHEAD);
-    lookOffset.y = 0.6;
+    lookOffset.y = airborne ? 1.4 + airTime * 0.5 : 0.6;
 
     desiredPosition.set(tx, ty, tz).add(cameraOffset);
     desiredLookAt.set(tx, 0.8, tz).add(lookOffset);

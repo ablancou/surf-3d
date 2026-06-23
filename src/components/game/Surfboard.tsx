@@ -17,6 +17,7 @@ import {
   emitFoamTrail,
   emitPopSpray,
   emitTubeSpray,
+  emitLandingSplash,
   emitTrickSpray,
   emitWipeoutSplash,
 } from "@/lib/particles/emitters";
@@ -70,6 +71,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
   const triggerWipeout = useGameStore((s) => s.triggerWipeout);
   const clearWipeout = useGameStore((s) => s.clearWipeout);
   const prunePopups = useGameStore((s) => s.prunePopups);
+  const tickComboDecay = useGameStore((s) => s.tickComboDecay);
   const wipedOut = useGameStore((s) => s.wipedOut);
   const markTutorial = useTutorialStore((s) => s.markAction);
 
@@ -125,8 +127,10 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
     );
 
     const pos = body.translation();
+    boardPosition.set(pos.x, pos.y, pos.z);
     const waterY = sampleOceanHeight(pos.x, pos.z, gameClock.time);
 
+    const prevAirTime = airTimeRef.current;
     if (!result.submerged) {
       airTimeRef.current += dt;
       const fellThrough = pos.y < waterY - 4 || pos.y < -8;
@@ -140,6 +144,9 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
         return;
       }
     } else {
+      if (prevAirTime > 0.22) {
+        emitLandingSplash(particlesRef.current, boardPosition, boardRotation, prevAirTime, result.speed);
+      }
       airTimeRef.current = 0;
     }
 
@@ -204,10 +211,12 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
 
     const particles = particlesRef.current;
 
+    tickComboDecay(gameClock.time);
+
     const trick = trickDetector.current.update(telemetry, gameClock.time, dt);
     if (trick) {
       trickCountRef.current += 1;
-      registerTrick(trick);
+      registerTrick(trick, gameClock.time);
       const comboNow = useGameStore.getState().combo;
       audioEngine.playTrick(trick.id, comboNow);
       hapticTrick(trick.id, comboNow);

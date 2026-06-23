@@ -1,12 +1,12 @@
 "use client";
 
-import { getActiveSpot } from "@/stores/spotStore";
+import { useSpotStore } from "@/stores/spotStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 
 export function SceneLighting() {
   const enableShadows = useSettingsStore((s) => s.perf.enableShadows);
   const shadowMapSize = useSettingsStore((s) => s.perf.shadowMapSize);
-  const spot = getActiveSpot();
+  const spot = useSpotStore((s) => s.spot);
 
   return (
     <>

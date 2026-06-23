@@ -134,6 +134,30 @@ function orientBasis(rotation: THREE.Quaternion) {
   forward.set(0, 0, 1).applyQuaternion(rotation);
 }
 
+export function emitLandingSplash(
+  particles: SprayParticlesHandle | null,
+  position: THREE.Vector3,
+  rotation: THREE.Quaternion,
+  airTime: number,
+  speed: number,
+) {
+  if (!particles || airTime < 0.22) return;
+  orientBasis(rotation);
+  emitPos.copy(position).addScaledVector(forward, 0.15);
+  emitVel.set(0, 2.5 + airTime * 2, 0).addScaledVector(forward, speed * 0.2);
+
+  particles.emit({
+    kind: "splash",
+    position: emitPos,
+    velocity: emitVel,
+    count: Math.floor(12 + airTime * 18 + speed * 1.5),
+    spread: 1.2 + airTime * 0.8,
+    speed: 4 + airTime * 3,
+    size: 0.14 + airTime * 0.06,
+    life: 0.6 + airTime * 0.35,
+  });
+}
+
 export function emitAirborneMist(
   particles: SprayParticlesHandle | null,
   position: THREE.Vector3,

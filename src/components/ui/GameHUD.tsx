@@ -3,8 +3,10 @@
 import type { OceanMode } from "@/lib/waves/oceanSampler";
 import type { RendererKind } from "@/lib/gpu/webgpu";
 import type { PerfTier } from "@/lib/performance/tiers";
-import { useGameStore } from "@/stores/gameStore";
+import { COMBO_WINDOW_SEC, useGameStore } from "@/stores/gameStore";
 import { useSpotStore } from "@/stores/spotStore";
+import { gameClock } from "@/lib/game/clock";
+import { useEffect, useState } from "react";
 
 type GameHUDProps = {
   rendererKind?: RendererKind;
@@ -18,8 +20,24 @@ export function GameHUD({ rendererKind, oceanMode, perfTier }: GameHUDProps) {
   const score = useGameStore((s) => s.score);
   const combo = useGameStore((s) => s.combo);
   const multiplier = useGameStore((s) => s.multiplier);
+  const comboExpiresAt = useGameStore((s) => s.comboExpiresAt);
   const riding = useGameStore((s) => s.riding);
   const inTube = useGameStore((s) => s.inTube);
+  const [comboFill, setComboFill] = useState(0);
+
+  useEffect(() => {
+    if (combo <= 0 || comboExpiresAt <= 0) {
+      setComboFill(0);
+      return;
+    }
+    const tick = () => {
+      const remaining = Math.max(0, comboExpiresAt - gameClock.time);
+      setComboFill(remaining / COMBO_WINDOW_SEC);
+    };
+    tick();
+    const id = window.setInterval(tick, 50);
+    return () => window.clearInterval(id);
+  }, [combo, comboExpiresAt]);
 
   const statusLabel = inTube ? "Tubo" : riding ? "Surfeando" : "Aéreo";
 
@@ -34,9 +52,17 @@ export function GameHUD({ rendererKind, oceanMode, perfTier }: GameHUDProps) {
           <p className="text-xs uppercase tracking-[0.2em] text-white/70">Puntos</p>
           <p className="font-mono text-3xl font-semibold text-white tabular-nums">{score}</p>
           {combo > 0 && (
-            <p className="mt-1 text-sm font-medium text-amber-300">
-              Combo x{combo} · {multiplier.toFixed(1)}×
-            </p>
+            <>
+              <p className="mt-1 text-sm font-medium text-amber-300">
+                Combo x{combo} · {multiplier.toFixed(1)}×
+              </p>
+              <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-white/15">
+                <div
+                  className="h-full rounded-full bg-amber-300 transition-[width] duration-75"
+                  style={{ width: `${comboFill * 100}%` }}
+                />
+              </div>
+            </>
           )}
         </div>
         <div className="rounded-xl border border-white/20 bg-black/35 px-4 py-3 text-right backdrop-blur-md">

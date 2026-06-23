@@ -12,6 +12,7 @@ import { LeaderboardPanel } from "@/components/ui/LeaderboardPanel";
 import { MultiplayerPanel } from "@/components/ui/MultiplayerPanel";
 import { SpotSelector } from "@/components/ui/SpotSelector";
 import { ComboBanner } from "@/components/ui/ComboBanner";
+import { SpeedStreaks } from "@/components/ui/SpeedStreaks";
 import { TrickPopups } from "@/components/ui/TrickPopups";
 import { TutorialOverlay } from "@/components/ui/TutorialOverlay";
 import { TubeOverlay } from "@/components/ui/TubeOverlay";
@@ -77,9 +78,7 @@ export function Game() {
         onCreated={({ gl }) => {
           const store = useSettingsStore.getState();
           store.setRendererKind("webgl");
-          if (store.perfTier === "low") {
-            store.setOceanMode("gerstner");
-          }
+          store.initPerf();
           gl.debug.checkShaderErrors = true;
           gl.toneMapping = THREE.ACESFilmicToneMapping;
           gl.toneMappingExposure = 1.15;
@@ -96,6 +95,7 @@ export function Game() {
       <TutorialOverlay />
       <TrickPopups />
       <ComboBanner />
+      <SpeedStreaks />
       <TubeOverlay />
       <WipeoutOverlay />
       <ControlsOverlay />

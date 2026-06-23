@@ -3,10 +3,10 @@
 import { Sky as DreiSky } from "@react-three/drei";
 import { useMemo } from "react";
 import * as THREE from "three";
-import { getActiveSpot } from "@/stores/spotStore";
+import { useSpotStore } from "@/stores/spotStore";
 
 export function Sky() {
-  const spot = getActiveSpot();
+  const spot = useSpotStore((s) => s.spot);
 
   const background = useMemo(
     () => new THREE.Color(spot.atmosphere.fogColor).lerp(new THREE.Color("#b8d9f0"), 0.35),

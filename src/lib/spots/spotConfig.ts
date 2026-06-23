@@ -1,4 +1,5 @@
 import type { GerstnerWave } from "@/lib/waves/waveConfig";
+import type { OceanMode } from "@/lib/waves/oceanSampler";
 import type { SpotMusicTuning, SpotPhysicsTuning, SpotTubeTuning } from "@/lib/spots/spotPhysics";
 
 export type SpotId = "pipeline" | "beach_break" | "point_break" | "sunset_beach";
@@ -20,6 +21,8 @@ export type SpotConfig = {
   physics: SpotPhysicsTuning;
   tube: SpotTubeTuning;
   music: SpotMusicTuning;
+  /** Océano preferido en tier medio/alto */
+  preferredOcean: OceanMode;
   atmosphere: {
     skyInclination: number;
     fogColor: string;
@@ -74,6 +77,7 @@ export const SURF_SPOTS: Record<SpotId, SpotConfig> = {
       kickHigh: 62,
       tubeMuffle: 0.38,
     },
+    preferredOcean: "ifft",
     atmosphere: {
       skyInclination: 0.48,
       fogColor: "#7eb8d4",
@@ -126,6 +130,7 @@ export const SURF_SPOTS: Record<SpotId, SpotConfig> = {
       kickHigh: 88,
       tubeMuffle: 0.55,
     },
+    preferredOcean: "gerstner",
     atmosphere: {
       skyInclination: 0.55,
       fogColor: "#9ecae1",
@@ -178,6 +183,7 @@ export const SURF_SPOTS: Record<SpotId, SpotConfig> = {
       kickHigh: 78,
       tubeMuffle: 0.48,
     },
+    preferredOcean: "ifft",
     atmosphere: {
       skyInclination: 0.5,
       fogColor: "#8ec8e0",
@@ -230,6 +236,7 @@ export const SURF_SPOTS: Record<SpotId, SpotConfig> = {
       kickHigh: 82,
       tubeMuffle: 0.5,
     },
+    preferredOcean: "ifft",
     atmosphere: {
       skyInclination: 0.62,
       fogColor: "#f0b88a",

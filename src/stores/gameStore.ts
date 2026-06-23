@@ -4,11 +4,14 @@ import type { WipeoutReason } from "@/lib/tricks/types";
 
 export type TrickPopup = TrickEvent & { id_key: string };
 
+export const COMBO_WINDOW_SEC = 4.8;
+
 type GameStore = {
   speed: number;
   score: number;
   combo: number;
   multiplier: number;
+  comboExpiresAt: number;
   riding: boolean;
   inTube: boolean;
   tubeDepth: number;
@@ -21,11 +24,12 @@ type GameStore = {
   setTubeState: (inTube: boolean, tubeDepth: number) => void;
   addTubeScore: (points: number) => void;
   addRideScore: (points: number) => void;
-  registerTrick: (trick: TrickEvent) => void;
+  registerTrick: (trick: TrickEvent, now: number) => void;
   triggerWipeout: (reason: WipeoutReason) => void;
   clearWipeout: () => void;
   addCameraShake: (amount: number) => void;
   tickCameraShake: (dt: number) => void;
+  tickComboDecay: (now: number) => void;
   prunePopups: (now: number) => void;
   resetCombo: () => void;
 };
@@ -37,6 +41,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   score: 0,
   combo: 0,
   multiplier: 1,
+  comboExpiresAt: 0,
   riding: false,
   inTube: false,
   tubeDepth: 0,
@@ -62,7 +67,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }));
   },
 
-  registerTrick: (trick) =>
+  registerTrick: (trick, now) =>
     set((s) => {
       const combo = Math.min(s.combo + 1, 99);
       const multiplier = 1 + combo * 0.18;
@@ -75,6 +80,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return {
         combo,
         multiplier,
+        comboExpiresAt: now + COMBO_WINDOW_SEC,
         score: s.score + Math.floor(trick.points * multiplier),
         trickPopups: [
           ...s.trickPopups.slice(-4),
@@ -90,6 +96,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       wipeoutReason: reason,
       combo: 0,
       multiplier: 1,
+      comboExpiresAt: 0,
       cameraShake: 1,
     }),
 
@@ -101,10 +108,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
   tickCameraShake: (dt) =>
     set((s) => ({ cameraShake: Math.max(0, s.cameraShake - dt * 2.5) })),
 
+  tickComboDecay: (now) => {
+    const s = get();
+    if (s.wipedOut || s.combo <= 0 || s.comboExpiresAt <= 0) return;
+    if (now >= s.comboExpiresAt) {
+      set({ combo: 0, multiplier: 1, comboExpiresAt: 0 });
+    }
+  },
+
   prunePopups: (now) =>
     set((s) => ({
       trickPopups: s.trickPopups.filter((p) => now - p.timestamp < 2.2),
     })),
 
-  resetCombo: () => set({ combo: 0, multiplier: 1 }),
+  resetCombo: () => set({ combo: 0, multiplier: 1, comboExpiresAt: 0 }),
 }));
