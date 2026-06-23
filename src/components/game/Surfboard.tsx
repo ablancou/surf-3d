@@ -22,7 +22,11 @@ import {
   emitTrickSpray,
   emitWipeoutSplash,
 } from "@/lib/particles/emitters";
-import { applySurfboardForces } from "@/lib/physics/surfboardForces";
+import {
+  applySurfboardForces,
+  POP_COOLDOWN_SEC,
+  popImpulseForSpeed,
+} from "@/lib/physics/surfboardForces";
 import { WipeoutDetector } from "@/lib/physics/wipeout";
 import { getSpotTube } from "@/lib/spots/spotPhysics";
 import { findOptimalSpawn, findRespawnPoint } from "@/lib/waves/spawnSystem";
@@ -47,6 +51,7 @@ type SurfboardProps = {
 
 const boardPosition = new THREE.Vector3();
 const boardRotation = new THREE.Quaternion();
+const boardForward = new THREE.Vector3();
 
 export function Surfboard({ inputManager, particlesRef, onTransform }: SurfboardProps) {
   const bodyRef = useRef<RapierRigidBody>(null);
@@ -54,6 +59,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
   const wipeoutDetector = useRef(new WipeoutDetector());
   const airTimeRef = useRef(0);
   const popCooldown = useRef(0);
+  const wasPopUp = useRef(false);
   const wipeoutTimer = useRef(0);
   const lastCarveSound = useRef(0);
   const lastPumpSpray = useRef(0);
@@ -75,6 +81,8 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
   const clearWipeout = useGameStore((s) => s.clearWipeout);
   const prunePopups = useGameStore((s) => s.prunePopups);
   const tickComboDecay = useGameStore((s) => s.tickComboDecay);
+  const setPopReady = useGameStore((s) => s.setPopReady);
+  const triggerDropBanner = useGameStore((s) => s.triggerDropBanner);
   const wipedOut = useGameStore((s) => s.wipedOut);
   const markTutorial = useTutorialStore((s) => s.markAction);
 
@@ -92,6 +100,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
       spawnGrace.current = 2.8;
       wasInTube.current = false;
       spawned.current = true;
+      triggerDropBanner(gameClock.time);
       replayRecorder.current.start(gameClock.time);
       trickCountRef.current = 0;
       runHandled.current = false;
@@ -111,6 +120,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
         wasInTube.current = false;
         wipeoutTimer.current = 0;
         clearWipeout();
+        triggerDropBanner(gameClock.time);
         wipeoutDetector.current.resetCooldown();
         replayRecorder.current.start(gameClock.time);
         trickCountRef.current = 0;
@@ -149,6 +159,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
     } else {
       if (prevAirTime > 0.22) {
         emitLandingSplash(particlesRef.current, boardPosition, boardRotation, prevAirTime, result.speed);
+        if (prevAirTime > 0.3) audioEngine.playTrickLand();
       }
       airTimeRef.current = 0;
     }
@@ -278,13 +289,30 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
       lastPumpSpray.current = gameClock.time;
     }
 
+    const wantsPop = inputManager.state.popUp;
+    const popEdge = wantsPop && !wasPopUp.current;
+    wasPopUp.current = wantsPop;
+
     popCooldown.current = Math.max(0, popCooldown.current - dt);
-    if (inputManager.state.popUp && result.submerged && popCooldown.current <= 0) {
+    setPopReady(
+      popCooldown.current <= 0 ? 1 : 1 - popCooldown.current / POP_COOLDOWN_SEC,
+    );
+
+    if (popEdge && result.submerged && popCooldown.current <= 0) {
+      const popPower = popImpulseForSpeed(result.speed);
+      body.applyImpulse({ x: 0, y: popPower, z: 0 }, true);
+      if (result.speed > 4) {
+        boardForward.set(0, 0, 1).applyQuaternion(boardRotation);
+        body.applyImpulse(
+          { x: boardForward.x * 0.35, y: 0, z: boardForward.z * 0.35 },
+          true,
+        );
+      }
       emitPopSpray(particles, boardPosition, boardRotation);
-      audioEngine.playSplash(0.5);
+      audioEngine.playSplash(0.45 + Math.min(result.speed / 20, 0.25));
       hapticPop();
       markTutorial("pop");
-      popCooldown.current = 0.35;
+      popCooldown.current = POP_COOLDOWN_SEC;
     }
 
     prunePopups(gameClock.time);

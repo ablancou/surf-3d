@@ -1,12 +1,15 @@
 import { create } from "zustand";
+import type { SpotId } from "@/lib/spots/spotConfig";
 import type { LeaderboardEntry } from "@/lib/leaderboard/types";
 import { useReplayStore } from "@/stores/replayStore";
+import { useSpotStore } from "@/stores/spotStore";
 
 type LeaderboardStore = {
   entries: LeaderboardEntry[];
   loading: boolean;
   lastRank: number | null;
   personalBest: number;
+  spotPersonalBest: number;
   trickCount: number;
   maxCombo: number;
   maxSpeed: number;
@@ -15,15 +18,34 @@ type LeaderboardStore = {
   trackSession: (stats: { trickCount?: number; maxCombo?: number; maxSpeed?: number }) => void;
   resetSession: () => void;
   loadPersonalBest: () => void;
+  loadSpotPersonalBest: (spotId: SpotId) => void;
 };
 
 const PB_KEY = "surf3d-personal-best";
+const PB_BY_SPOT_KEY = "surf3d-pb-by-spot";
+
+function readSpotBests(): Partial<Record<SpotId, number>> {
+  try {
+    const raw = localStorage.getItem(PB_BY_SPOT_KEY);
+    return raw ? (JSON.parse(raw) as Partial<Record<SpotId, number>>) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeSpotBest(spotId: SpotId, score: number) {
+  const bests = readSpotBests();
+  if ((bests[spotId] ?? 0) >= score) return;
+  bests[spotId] = score;
+  localStorage.setItem(PB_BY_SPOT_KEY, JSON.stringify(bests));
+}
 
 export const useLeaderboardStore = create<LeaderboardStore>((set, get) => ({
   entries: [],
   loading: false,
   lastRank: null,
   personalBest: 0,
+  spotPersonalBest: 0,
   trickCount: 0,
   maxCombo: 0,
   maxSpeed: 0,
@@ -35,7 +57,13 @@ export const useLeaderboardStore = create<LeaderboardStore>((set, get) => ({
     } catch {
       // ignore
     }
+    get().loadSpotPersonalBest(useSpotStore.getState().spotId);
     useReplayStore.getState().loadPersonalBest();
+  },
+
+  loadSpotPersonalBest: (spotId) => {
+    const bests = readSpotBests();
+    set({ spotPersonalBest: bests[spotId] ?? 0 });
   },
 
   fetchLeaderboard: async () => {
@@ -67,6 +95,11 @@ export const useLeaderboardStore = create<LeaderboardStore>((set, get) => ({
       if (score > get().personalBest) {
         localStorage.setItem(PB_KEY, String(score));
         set({ personalBest: score });
+      }
+      const spotId = useSpotStore.getState().spotId;
+      if (score > get().spotPersonalBest) {
+        writeSpotBest(spotId, score);
+        set({ spotPersonalBest: score });
       }
       await get().fetchLeaderboard();
     } catch {

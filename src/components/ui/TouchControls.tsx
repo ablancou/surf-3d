@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { isCoarsePointer } from "@/lib/input/deviceProfile";
 import type { InputManager } from "@/lib/input/InputManager";
+import { useGameStore } from "@/stores/gameStore";
 
 type TouchControlsProps = {
   inputManager: InputManager;
@@ -18,6 +19,7 @@ export function TouchControls({ inputManager }: TouchControlsProps) {
   const activeRef = useRef(false);
   const touchIdRef = useRef<number | null>(null);
   const [, tick] = useState(0);
+  const popReady = useGameStore((s) => s.popReady);
 
   useEffect(() => {
     setVisible(isCoarsePointer());
@@ -111,7 +113,11 @@ export function TouchControls({ inputManager }: TouchControlsProps) {
 
       <button
         type="button"
-        className="pointer-events-auto absolute right-4 bottom-8 flex h-16 w-16 items-center justify-center rounded-full border border-white/25 bg-black/35 text-xs font-bold tracking-wider text-white/90 backdrop-blur-sm active:bg-white/20"
+        className={`pointer-events-auto absolute right-4 bottom-8 flex h-16 w-16 items-center justify-center rounded-full border bg-black/35 text-xs font-bold tracking-wider backdrop-blur-sm active:bg-white/20 ${
+          popReady >= 0.98
+            ? "border-amber-300/50 text-amber-100 shadow-[0_0_14px_rgba(251,191,36,0.35)]"
+            : "border-white/25 text-white/70"
+        }`}
         onTouchStart={(e) => e.preventDefault()}
         onTouchEnd={(e) => {
           e.preventDefault();
@@ -119,6 +125,13 @@ export function TouchControls({ inputManager }: TouchControlsProps) {
         }}
         onClick={() => inputManager.requestPop()}
       >
+        <span
+          className="absolute inset-0 rounded-full border-2 border-amber-300/60"
+          style={{
+            clipPath: `inset(${100 - Math.round(popReady * 100)}% 0 0 0)`,
+            opacity: popReady >= 0.98 ? 0 : 0.7,
+          }}
+        />
         POP
       </button>
     </div>

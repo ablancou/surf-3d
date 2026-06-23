@@ -14,6 +14,7 @@ export function LeaderboardPanel() {
   const entries = useLeaderboardStore((s) => s.entries);
   const loading = useLeaderboardStore((s) => s.loading);
   const personalBest = useLeaderboardStore((s) => s.personalBest);
+  const spotPersonalBest = useLeaderboardStore((s) => s.spotPersonalBest);
   const lastRank = useLeaderboardStore((s) => s.lastRank);
   const fetchLeaderboard = useLeaderboardStore((s) => s.fetchLeaderboard);
   const submitScore = useLeaderboardStore((s) => s.submitScore);
@@ -49,21 +50,24 @@ export function LeaderboardPanel() {
           if (!open) void fetchLeaderboard();
         }}
       >
-        Leaderboard
+        Ranking
       </Button>
       {open && (
         <div className="mt-2 max-h-[60vh] w-80 overflow-y-auto rounded-xl border border-white/20 bg-black/55 p-4 text-sm text-white backdrop-blur-md">
           <div className="mb-3 flex items-center justify-between">
-            <p className="font-semibold">Global Top 50</p>
-            {personalBest > 0 && (
-              <span className="text-xs text-amber-300">PB: {personalBest}</span>
-            )}
+            <p className="font-semibold">Top 50 global</p>
+            <div className="text-right text-xs">
+              {spotPersonalBest > 0 && (
+                <p className="text-amber-300">PB spot: {spotPersonalBest}</p>
+              )}
+              {personalBest > 0 && <p className="text-white/45">PB total: {personalBest}</p>}
+            </div>
           </div>
 
           {loading ? (
-            <p className="text-white/60">Loading...</p>
+            <p className="text-white/60">Cargando...</p>
           ) : entries.length === 0 ? (
-            <p className="text-white/60">No scores yet — be the first!</p>
+            <p className="text-white/60">Sin puntuaciones — ¡sé el primero!</p>
           ) : (
             <ol className="mb-3 space-y-1">
               {entries.slice(0, 15).map((e, i) => (
@@ -82,10 +86,10 @@ export function LeaderboardPanel() {
           )}
 
           <Button size="sm" className="mb-2 w-full" onClick={handleSubmit} disabled={score < 100}>
-            Submit Score ({score})
+            Enviar puntuación ({score})
           </Button>
           {lastRank && (
-            <p className="mb-2 text-center text-xs text-green-300">Rank #{lastRank}!</p>
+            <p className="mb-2 text-center text-xs text-green-300">¡Puesto #{lastRank}!</p>
           )}
 
           <div className="flex gap-2">
@@ -95,7 +99,7 @@ export function LeaderboardPanel() {
               className="flex-1 text-xs"
               onClick={togglePersonalGhost}
             >
-              Your Ghost
+              Tu ghost
             </Button>
             <Button
               size="sm"
@@ -103,7 +107,7 @@ export function LeaderboardPanel() {
               className="flex-1 text-xs"
               onClick={toggleGlobalGhost}
             >
-              #1 Ghost
+              Ghost #1
             </Button>
           </div>
         </div>

@@ -19,8 +19,11 @@ type GameStore = {
   wipedOut: boolean;
   wipeoutReason: WipeoutReason | null;
   cameraShake: number;
+  popReady: number;
+  dropBannerUntil: number;
   trickPopups: TrickPopup[];
   setSpeed: (speed: number) => void;
+  setPopReady: (ready: number) => void;
   setAirTime: (airTime: number) => void;
   setRiding: (riding: boolean) => void;
   resetRide: () => void;
@@ -30,6 +33,7 @@ type GameStore = {
   registerTrick: (trick: TrickEvent, now: number) => void;
   triggerWipeout: (reason: WipeoutReason) => void;
   clearWipeout: () => void;
+  triggerDropBanner: (now: number) => void;
   addCameraShake: (amount: number) => void;
   tickCameraShake: (dt: number) => void;
   tickComboDecay: (now: number) => void;
@@ -52,9 +56,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
   wipedOut: false,
   wipeoutReason: null,
   cameraShake: 0,
+  popReady: 1,
+  dropBannerUntil: 0,
   trickPopups: [],
 
   setSpeed: (speed) => set({ speed }),
+  setPopReady: (popReady) => set({ popReady }),
   setAirTime: (airTime) => set({ airTime }),
   setRiding: (riding) => set({ riding }),
   resetRide: () =>
@@ -71,6 +78,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       wipedOut: false,
       wipeoutReason: null,
       cameraShake: 0,
+      popReady: 1,
+      dropBannerUntil: 0,
       trickPopups: [],
     }),
   setTubeState: (inTube, tubeDepth) => set({ inTube, tubeDepth }),
@@ -122,6 +131,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }),
 
   clearWipeout: () => set({ wipedOut: false, wipeoutReason: null }),
+
+  triggerDropBanner: (now) => set({ dropBannerUntil: now + 1.4 }),
 
   addCameraShake: (amount) =>
     set((s) => ({ cameraShake: Math.min(1, s.cameraShake + amount) })),

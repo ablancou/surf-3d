@@ -13,6 +13,10 @@ import { MultiplayerPanel } from "@/components/ui/MultiplayerPanel";
 import { SpotSelector } from "@/components/ui/SpotSelector";
 import { ComboBanner } from "@/components/ui/ComboBanner";
 import { AerialOverlay } from "@/components/ui/AerialOverlay";
+import { DropBanner } from "@/components/ui/DropBanner";
+import { MilestoneBanner } from "@/components/ui/MilestoneBanner";
+import { PopMeter } from "@/components/ui/PopMeter";
+import { SessionStats } from "@/components/ui/SessionStats";
 import { SpeedStreaks } from "@/components/ui/SpeedStreaks";
 import { TrickPopups } from "@/components/ui/TrickPopups";
 import { TutorialOverlay } from "@/components/ui/TutorialOverlay";
@@ -96,6 +100,10 @@ export function Game() {
       <TutorialOverlay />
       <TrickPopups />
       <ComboBanner />
+      <MilestoneBanner />
+      <DropBanner />
+      <PopMeter />
+      <SessionStats />
       <SpeedStreaks />
       <AerialOverlay />
       <TubeOverlay />

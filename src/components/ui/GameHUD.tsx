@@ -4,7 +4,9 @@ import type { OceanMode } from "@/lib/waves/oceanSampler";
 import type { RendererKind } from "@/lib/gpu/webgpu";
 import type { PerfTier } from "@/lib/performance/tiers";
 import { COMBO_WINDOW_SEC, useGameStore } from "@/stores/gameStore";
+import { useLeaderboardStore } from "@/stores/leaderboardStore";
 import { useSpotStore } from "@/stores/spotStore";
+import { getSpotPhysics } from "@/lib/spots/spotPhysics";
 import { gameClock } from "@/lib/game/clock";
 import { useEffect, useRef, useState } from "react";
 
@@ -16,7 +18,9 @@ type GameHUDProps = {
 
 export function GameHUD({ rendererKind, oceanMode, perfTier }: GameHUDProps) {
   const spotName = useSpotStore((s) => s.spot.name);
+  const spotPersonalBest = useLeaderboardStore((s) => s.spotPersonalBest);
   const speed = useGameStore((s) => s.speed);
+  const maxSpeed = getSpotPhysics().maxSpeed;
   const score = useGameStore((s) => s.score);
   const combo = useGameStore((s) => s.combo);
   const multiplier = useGameStore((s) => s.multiplier);
@@ -52,6 +56,8 @@ export function GameHUD({ rendererKind, oceanMode, perfTier }: GameHUDProps) {
   }, [combo, comboExpiresAt]);
 
   const comboUrgent = combo > 0 && comboFill > 0 && comboFill < 0.22;
+  const beatingPb = spotPersonalBest > 0 && score > spotPersonalBest;
+  const nearMaxSpeed = speed > maxSpeed * 0.88;
   const statusLabel = inTube ? "Tubo" : riding ? "Surfeando" : "Aéreo";
 
   return (
@@ -66,7 +72,14 @@ export function GameHUD({ rendererKind, oceanMode, perfTier }: GameHUDProps) {
                 : "border-white/20"
           }`}
         >
-          <p className="text-xs uppercase tracking-[0.2em] text-white/70">Puntos</p>
+          <div className="flex items-baseline justify-between gap-2">
+            <p className="text-xs uppercase tracking-[0.2em] text-white/70">Puntos</p>
+            {spotPersonalBest > 0 && (
+              <p className={`text-[10px] ${beatingPb ? "text-green-300" : "text-white/40"}`}>
+                PB {spotPersonalBest}
+              </p>
+            )}
+          </div>
           <p
             className={`font-mono text-3xl font-semibold text-white tabular-nums transition-transform duration-150 ${
               scorePulse ? "scale-110 text-amber-100" : ""
@@ -91,9 +104,17 @@ export function GameHUD({ rendererKind, oceanMode, perfTier }: GameHUDProps) {
             </>
           )}
         </div>
-        <div className="rounded-xl border border-white/20 bg-black/35 px-4 py-3 text-right backdrop-blur-md">
+        <div
+          className={`rounded-xl border bg-black/35 px-4 py-3 text-right backdrop-blur-md transition-shadow ${
+            nearMaxSpeed ? "border-orange-400/40 shadow-[0_0_16px_rgba(251,146,60,0.25)]" : "border-white/20"
+          }`}
+        >
           <p className="text-xs uppercase tracking-[0.2em] text-white/70">Velocidad</p>
-          <p className="font-mono text-2xl font-semibold text-white tabular-nums">
+          <p
+            className={`font-mono text-2xl font-semibold tabular-nums ${
+              nearMaxSpeed ? "text-orange-200" : "text-white"
+            }`}
+          >
             {speed.toFixed(1)}
           </p>
           <p className="mt-1 text-xs text-white/60">{statusLabel}</p>

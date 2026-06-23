@@ -14,8 +14,14 @@ const WATER_DRAG = 0.91;
 const AIR_DRAG = 0.994;
 const ALIGN_TORQUE = 24;
 const INPUT_TORQUE = 9;
-const POP_IMPULSE = 3.8;
 const MAX_SINK_SPEED = -1.8;
+
+export const POP_COOLDOWN_SEC = 0.35;
+export const BASE_POP_IMPULSE = 3.8;
+
+export function popImpulseForSpeed(speed: number) {
+  return BASE_POP_IMPULSE * (1 + Math.min(speed / 14, 0.38));
+}
 
 const sampleOut = {
   height: 0,
@@ -208,10 +214,6 @@ export function applySurfboardForces(
       },
       true,
     );
-  }
-
-  if (input.popUp && submerged) {
-    body.applyImpulse({ x: 0, y: POP_IMPULSE, z: 0 }, true);
   }
 
   speed = Math.sqrt(linvel.x ** 2 + linvel.z ** 2);

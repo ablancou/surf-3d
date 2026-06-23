@@ -19,6 +19,7 @@ export const useSpotStore = create<SpotStore>((set, get) => ({
     syncOceanModeForSpot(spotId);
     useGameStore.getState().resetRide();
     useLeaderboardStore.getState().resetSession();
+    useLeaderboardStore.getState().loadSpotPersonalBest(spotId);
   },
 }));
 
