@@ -36,7 +36,7 @@ function RemoteSurfer({ player }: { player: RemotePlayer }) {
     <group ref={groupRef}>
       <mesh>
         <boxGeometry args={[0.5, 0.14, 1.9]} />
-        <meshStandardMaterial color="#38bdf8" transparent opacity={0.75} roughness={0.4} />
+        <meshStandardMaterial color="#f8fafc" emissive="#2563eb" emissiveIntensity={0.15} transparent opacity={0.8} roughness={0.35} />
       </mesh>
       <Html position={[0, 1.2, 0]} center distanceFactor={12} style={{ pointerEvents: "none" }}>
         <div className="whitespace-nowrap rounded-md bg-black/50 px-2 py-0.5 text-xs font-medium text-white backdrop-blur">

@@ -43,18 +43,13 @@ export function GameHUD({ rendererKind, oceanMode, perfTier }: GameHUDProps) {
           </p>
         </div>
       </div>
-      <div className="text-center">
-        <p className="text-sm text-white/80 drop-shadow">
-          WASD / drag / left stick to carve · Space / RT / tap-release to pop
+      {rendererKind && oceanMode && (
+        <p className="text-center text-[11px] text-white/35">
+          {spotName} · {rendererKind.toUpperCase()} ·{" "}
+          {oceanMode === "ifft" ? "IFFT" : "Gerstner"}
+          {perfTier ? ` · ${perfTier}` : ""}
         </p>
-        {rendererKind && oceanMode && (
-          <p className="mt-1 text-xs text-white/50">
-            {spotName} · {rendererKind.toUpperCase()} ·{" "}
-            {oceanMode === "ifft" ? "IFFT" : "Gerstner"}
-            {perfTier ? ` · ${perfTier}` : ""}
-          </p>
-        )}
-      </div>
+      )}
     </div>
   );
 }

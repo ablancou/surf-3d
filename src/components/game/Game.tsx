@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { GameScene } from "@/components/game/GameScene";
 import { ControlsOverlay } from "@/components/ui/ControlsOverlay";
+import { PlayHints } from "@/components/ui/PlayHints";
 import { GameHUD } from "@/components/ui/GameHUD";
 import { LeaderboardPanel } from "@/components/ui/LeaderboardPanel";
 import { MultiplayerPanel } from "@/components/ui/MultiplayerPanel";
@@ -64,7 +65,7 @@ export function Game() {
         frameloop="always"
         shadows={false}
         dpr={[1, perf.dprMax]}
-        camera={{ fov: 62, near: 0.1, far: 2000, position: [0, 6.8, -18] }}
+        camera={{ fov: 64, near: 0.1, far: 2000, position: [0, 5.2, -14] }}
         gl={{
           antialias: true,
           powerPreference: "high-performance",
@@ -89,6 +90,7 @@ export function Game() {
       <MultiplayerPanel />
       <LeaderboardPanel />
       <GameHUD rendererKind={rendererKind} oceanMode={oceanMode} perfTier={perfTier} />
+      <PlayHints />
       <TutorialOverlay />
       <TrickPopups />
       <TubeOverlay />

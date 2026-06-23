@@ -15,7 +15,7 @@ export type SpawnPoint = {
 export function findOptimalSpawn(time: number): SpawnPoint {
   const spot = getActiveSpot();
   const { zMin, zMax, xRange } = spot.spawn;
-  let best: SpawnPoint = { x: 0, y: 2, z: zMin, boost: 6, quality: 0 };
+  let best: SpawnPoint = { x: 0, y: 2, z: zMin, boost: 8, quality: 0 };
 
   for (let z = zMin; z <= zMax; z += 2) {
     for (let x = -xRange; x <= xRange; x += 2) {
@@ -33,7 +33,7 @@ export function findOptimalSpawn(time: number): SpawnPoint {
           x,
           y: waterY + 0.5,
           z,
-          boost: 5 + Math.min(slope * 4, 4),
+          boost: 7 + Math.min(slope * 4, 5),
           quality: faceQuality,
         };
       }

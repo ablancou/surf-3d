@@ -28,9 +28,9 @@ export function Ocean() {
   const waveMaterial = useMemo(
     () =>
       new THREE.MeshLambertMaterial({
-        color: spot.atmosphere.shallowWater,
-        emissive: spot.atmosphere.deepWater,
-        emissiveIntensity: 0.08,
+        color: "#38bdf8",
+        emissive: "#0c4a6e",
+        emissiveIntensity: 0.15,
         side: THREE.DoubleSide,
       }),
     [spot.id],

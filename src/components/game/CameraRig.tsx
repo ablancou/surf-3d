@@ -8,8 +8,8 @@ import { useGameStore } from "@/stores/gameStore";
 
 const BASE_FOV = 62;
 const TUBE_FOV = 54;
-const CAMERA_DISTANCE = 11;
-const LOOK_AHEAD = 18;
+const CAMERA_DISTANCE = 8.5;
+const LOOK_AHEAD = 13;
 
 type CameraRigProps = {
   targetPosition: THREE.Vector3;
@@ -57,10 +57,10 @@ export function CameraRig({ targetPosition, targetRotation }: CameraRigProps) {
     const tz = boardVisualState.z;
 
     cameraOffset.copy(forward).multiplyScalar(-CAMERA_DISTANCE);
-    cameraOffset.y = 6.8;
+    cameraOffset.y = 5.2;
 
     lookOffset.copy(forward).multiplyScalar(LOOK_AHEAD);
-    lookOffset.y = 1.0;
+    lookOffset.y = 0.6;
 
     desiredPosition.set(tx, ty, tz).add(cameraOffset);
     desiredLookAt.set(tx, 0.8, tz).add(lookOffset);
