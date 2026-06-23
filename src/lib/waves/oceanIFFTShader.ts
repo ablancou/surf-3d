@@ -1,6 +1,4 @@
 export const ifftOceanVertexShader = /* glsl */ `
-#include <common>
-
 uniform float uTime;
 uniform sampler2D uHeightMap;
 uniform float uOceanSize;
@@ -40,12 +38,11 @@ void main() {
 `;
 
 export const ifftOceanFragmentShader = /* glsl */ `
-#include <common>
-
 uniform vec3 uDeepColor;
 uniform vec3 uShallowColor;
 uniform vec3 uFoamColor;
 uniform vec3 uSunDirection;
+uniform vec3 uCameraPosition;
 uniform float uFoamThreshold;
 
 varying vec3 vWorldPos;
@@ -55,7 +52,7 @@ varying float vDepth;
 
 void main() {
   vec3 N = normalize(vNormal);
-  vec3 V = normalize(cameraPosition - vWorldPos);
+  vec3 V = normalize(uCameraPosition - vWorldPos);
   vec3 L = normalize(uSunDirection);
   vec3 H = normalize(L + V);
 

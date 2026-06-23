@@ -61,6 +61,7 @@ export function Game() {
   return (
     <div ref={containerRef} className="relative h-dvh w-full touch-none select-none overflow-hidden bg-sky-300">
       <Canvas
+        frameloop="always"
         shadows={false}
         dpr={[1, perf.dprMax]}
         camera={{ fov: 62, near: 0.1, far: 2000, position: [0, 6.8, -18] }}
@@ -76,8 +77,9 @@ export function Game() {
           if (store.perfTier === "low") {
             store.setOceanMode("gerstner");
           }
+          gl.debug.checkShaderErrors = true;
           gl.toneMapping = THREE.ACESFilmicToneMapping;
-          gl.toneMappingExposure = 1.1;
+          gl.toneMappingExposure = 1.15;
           gl.setClearColor(new THREE.Color("#87b8d9"));
         }}
       >

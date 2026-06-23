@@ -40,6 +40,8 @@ export function SurfboardModel() {
     () =>
       new THREE.MeshStandardMaterial({
         color: "#f97316",
+        emissive: "#c2410c",
+        emissiveIntensity: 0.2,
         roughness: 0.32,
         metalness: 0.12,
       }),
@@ -75,7 +77,7 @@ export function SurfboardModel() {
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} scale={1.25}>
       <mesh geometry={geometry} castShadow receiveShadow material={deckMaterial} />
       <mesh ref={noseRef} position={[0, 0.08, 0.75]} castShadow>
         <boxGeometry args={[0.18, 0.03, 0.35]} />

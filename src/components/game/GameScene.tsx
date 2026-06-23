@@ -44,6 +44,7 @@ export function GameScene({ inputManager }: GameSceneProps) {
 
   return (
     <>
+      <fog attach="fog" args={[spot.atmosphere.fogColor, spot.atmosphere.fogNear, spot.atmosphere.fogFar]} />
       <hemisphereLight args={["#c8e4f8", spot.atmosphere.shallowWater, 0.75]} />
       <ambientLight intensity={0.52} />
       <directionalLight

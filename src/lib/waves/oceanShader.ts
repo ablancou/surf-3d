@@ -1,8 +1,6 @@
 import { MAX_WAVES } from "./waveConfig";
 
 export const oceanVertexShader = /* glsl */ `
-#include <common>
-
 uniform float uTime;
 uniform vec4 uWaveA[${MAX_WAVES}];
 uniform vec4 uWaveB[${MAX_WAVES}];
@@ -66,12 +64,11 @@ void main() {
 `;
 
 export const oceanFragmentShader = /* glsl */ `
-#include <common>
-
 uniform vec3 uDeepColor;
 uniform vec3 uShallowColor;
 uniform vec3 uFoamColor;
 uniform vec3 uSunDirection;
+uniform vec3 uCameraPosition;
 uniform float uFoamThreshold;
 
 varying vec3 vWorldPos;
@@ -81,7 +78,7 @@ varying float vDepth;
 
 void main() {
   vec3 N = normalize(vNormal);
-  vec3 V = normalize(cameraPosition - vWorldPos);
+  vec3 V = normalize(uCameraPosition - vWorldPos);
   vec3 L = normalize(uSunDirection);
   vec3 H = normalize(L + V);
 

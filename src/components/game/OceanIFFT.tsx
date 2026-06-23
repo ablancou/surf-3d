@@ -1,6 +1,6 @@
 "use client";
 
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { boardVisualState } from "@/lib/game/boardVisualState";
@@ -13,6 +13,7 @@ import { getActiveSpot } from "@/stores/spotStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 
 export function OceanIFFT() {
+  const { camera } = useThree();
   const meshRef = useRef<THREE.Mesh>(null);
   const simRef = useRef<OceanSimulator | null>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
@@ -43,6 +44,7 @@ export function OceanIFFT() {
       uShallowColor: { value: new THREE.Color(spot.atmosphere.shallowWater) },
       uFoamColor: { value: new THREE.Color("#e8f6fc") },
       uSunDirection: { value: new THREE.Vector3(0.6, 0.85, 0.3).normalize() },
+      uCameraPosition: { value: new THREE.Vector3() },
       uFoamThreshold: { value: 0.18 },
     }),
     [spot.id],
@@ -63,6 +65,7 @@ export function OceanIFFT() {
     tex.image.data = sim.heightField;
     tex.needsUpdate = true;
     mat.uniforms.uTime.value = gameClock.time;
+    mat.uniforms.uCameraPosition.value.copy(camera.position);
     mat.uniforms.uHeightScale.value = sim.heightScale;
     if (mat.uniforms.uHeightMap.value !== tex) {
       mat.uniforms.uHeightMap.value = tex;
