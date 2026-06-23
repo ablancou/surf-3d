@@ -63,7 +63,7 @@ export function Game() {
     <div ref={containerRef} className="relative h-dvh w-full touch-none select-none overflow-hidden bg-sky-300">
       <Canvas
         frameloop="always"
-        shadows={false}
+        shadows={perf.enableShadows}
         dpr={[1, perf.dprMax]}
         camera={{ fov: 64, near: 0.1, far: 2000, position: [0, 5.2, -14] }}
         gl={{

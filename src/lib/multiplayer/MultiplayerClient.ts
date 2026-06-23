@@ -1,6 +1,5 @@
 import type { RemotePlayer } from "@/lib/multiplayer/types";
-
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:3001";
+import { resolveWsUrl } from "@/lib/multiplayer/wsUrl";
 
 export type MultiplayerCallbacks = {
   onStatus: (status: "connecting" | "connected" | "error", message?: string) => void;
@@ -63,7 +62,7 @@ export class MultiplayerClient {
     this.callbacks.onStatus("connecting");
 
     try {
-      this.ws = new WebSocket(WS_URL);
+      this.ws = new WebSocket(resolveWsUrl());
     } catch {
       this.callbacks.onStatus("error", "WebSocket unavailable");
       return;
@@ -103,7 +102,7 @@ export class MultiplayerClient {
     };
 
     this.ws.onerror = () => {
-      this.callbacks.onStatus("error", "Connection failed — run npm run dev:mp");
+      this.callbacks.onStatus("error", "No se pudo conectar al servidor multiplayer");
     };
 
     this.ws.onclose = () => {

@@ -37,6 +37,7 @@ export function Ocean() {
   );
 
   const computeNormals = useSettingsStore((s) => s.perfTier !== "low");
+  const receiveShadow = useSettingsStore((s) => s.perf.enableShadows);
 
   useEffect(() => {
     setOceanMode("gerstner");
@@ -78,7 +79,12 @@ export function Ocean() {
       <mesh rotation={[-Math.PI / 2, 0, 0]} frustumCulled={false} material={baseMaterial}>
         <planeGeometry args={[OCEAN_SIZE, OCEAN_SIZE, 1, 1]} />
       </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} frustumCulled={false} material={waveMaterial}>
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        frustumCulled={false}
+        material={waveMaterial}
+        receiveShadow={receiveShadow}
+      >
         <planeGeometry args={[OCEAN_SIZE, OCEAN_SIZE, segments, segments]} />
       </mesh>
     </group>

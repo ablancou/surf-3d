@@ -1,0 +1,33 @@
+# Fly.io config for WebSocket + leaderboard persistence server
+# Deploy: fly launch --copy-config --dockerfile Dockerfile.ws
+#         fly secrets set LEADERBOARD_DATA_DIR=/data (optional)
+#         fly deploy
+
+app = "surf-3d-ws"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile.ws"
+
+[env]
+  WS_PORT = "3001"
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+  [[http_service.checks]]
+    grace_period = "15s"
+    interval = "30s"
+    method = "GET"
+    path = "/health"
+    timeout = "5s"
+
+[[mounts]]
+  source = "surf3d_data"
+  destination = "/data"
+  initial_size = "1gb"

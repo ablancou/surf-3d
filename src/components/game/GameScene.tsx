@@ -8,6 +8,8 @@ import * as THREE from "three";
 import { CameraRig } from "@/components/game/CameraRig";
 import { Effects } from "@/components/game/Effects";
 import { OceanSystem } from "@/components/game/OceanSystem";
+import { SceneLighting } from "@/components/game/SceneLighting";
+import { ShadowReceiver } from "@/components/game/ShadowReceiver";
 import { RemoteSurfers } from "@/components/game/RemoteSurfers";
 import { ReplayGhosts } from "@/components/game/ReplayGhost";
 import { Sky } from "@/components/game/Sky";
@@ -48,12 +50,11 @@ export function GameScene({ inputManager }: GameSceneProps) {
         attach="fog"
         args={[spot.atmosphere.fogColor, spot.atmosphere.fogNear, Math.min(spot.atmosphere.fogFar, fogFar)]}
       />
-      <hemisphereLight args={["#d4ecff", spot.atmosphere.shallowWater, 0.85]} />
-      <ambientLight intensity={0.62} />
-      <directionalLight intensity={2.4} position={[40, 60, 20]} />
+      <SceneLighting />
 
       <Sky />
       <OceanSystem />
+      <ShadowReceiver />
       <CameraRig
         targetPosition={boardPosition.current}
         targetRotation={boardRotation.current}

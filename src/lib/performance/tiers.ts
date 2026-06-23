@@ -17,7 +17,7 @@ export const PERF_PRESETS: Record<PerfTier, PerfPreset> = {
     ifftSize: 64,
     particleMax: 1200,
     enableEffects: true,
-    enableShadows: false,
+    enableShadows: true,
     dprMax: 1.5,
     shadowMapSize: 2048,
     fogFar: 180,

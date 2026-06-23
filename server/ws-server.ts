@@ -2,7 +2,8 @@ import { createServer, type IncomingMessage, type ServerResponse } from "http";
 import { WebSocketServer, type WebSocket } from "ws";
 import { addEntry, getEntries, type LbEntry } from "./leaderboard";
 
-const PORT = Number(process.env.WS_PORT ?? 3001);
+const PORT = Number(process.env.PORT ?? process.env.WS_PORT ?? 3001);
+const HOST = process.env.HOST ?? "0.0.0.0";
 
 type PlayerState = {
   id: string;
@@ -248,6 +249,6 @@ setInterval(() => {
   }
 }, 50);
 
-server.listen(PORT, () => {
-  console.log(`Surf 3D server http://localhost:${PORT} · ws://localhost:${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`Surf 3D server http://${HOST}:${PORT} · ws://${HOST}:${PORT}`);
 });

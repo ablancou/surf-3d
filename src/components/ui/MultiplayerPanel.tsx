@@ -31,13 +31,13 @@ export function MultiplayerPanel() {
           initClient();
         }}
       >
-        {connected ? `Room ${roomId}` : "Multiplayer"}
+        {connected ? `Sala ${roomId}` : "Multijugador"}
       </Button>
       {open && (
         <div className="mt-2 w-72 rounded-xl border border-white/20 bg-black/55 p-4 text-sm text-white backdrop-blur-md">
           {!connected ? (
             <>
-              <label className="mb-1 block text-xs text-white/60">Your name</label>
+              <label className="mb-1 block text-xs text-white/60">Tu nombre</label>
               <input
                 className="mb-3 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white outline-none"
                 value={playerName}
@@ -45,7 +45,7 @@ export function MultiplayerPanel() {
               />
               <div className="flex gap-2">
                 <Button size="sm" className="flex-1" onClick={createRoom}>
-                  Create Room
+                  Crear sala
                 </Button>
               </div>
               <div className="mt-3 flex gap-2">
@@ -57,20 +57,20 @@ export function MultiplayerPanel() {
                   onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                 />
                 <Button size="sm" variant="secondary" onClick={() => joinRoom(joinCode)}>
-                  Join
+                  Unirse
                 </Button>
               </div>
               {error && <p className="mt-2 text-xs text-red-300">{error}</p>}
-              <p className="mt-2 text-xs text-white/50">Run: npm run dev:mp</p>
+              <p className="mt-2 text-xs text-white/50">Local: npm run dev:mp</p>
             </>
           ) : (
             <>
-              <p className="font-semibold">Room {roomId}</p>
+              <p className="font-semibold">Sala {roomId}</p>
               <p className="mb-2 text-xs text-white/60">
-                {remotePlayers.length + 1} surfers online
+                {remotePlayers.length + 1} surfers conectados
               </p>
               <ul className="mb-3 space-y-1 text-xs text-white/80">
-                <li>You ({playerName})</li>
+                <li>Tú ({playerName})</li>
                 {remotePlayers.map((p) => (
                   <li key={p.id}>
                     {p.name} — {p.score} pts
@@ -78,7 +78,7 @@ export function MultiplayerPanel() {
                 ))}
               </ul>
               <Button size="sm" variant="destructive" className="w-full" onClick={leaveRoom}>
-                Leave Room
+                Salir de la sala
               </Button>
             </>
           )}

@@ -35,7 +35,10 @@ export async function GET() {
   if (proxied?.entries) {
     return NextResponse.json({ entries: proxied.entries, source: "external" });
   }
-  return NextResponse.json({ entries: getLeaderboard(50), source: "local" });
+
+  const entries = await getLeaderboard(50);
+  const source = process.env.BLOB_READ_WRITE_TOKEN ? "blob" : "local";
+  return NextResponse.json({ entries, source });
 }
 
 export async function POST(request: Request) {
@@ -50,8 +53,9 @@ export async function POST(request: Request) {
       return NextResponse.json(proxied);
     }
 
-    const entry = submitScore(body);
-    return NextResponse.json({ entry, rank: getLeaderboard(50).findIndex((e) => e.id === entry.id) + 1 });
+    const entry = await submitScore(body);
+    const board = await getLeaderboard(50);
+    return NextResponse.json({ entry, rank: board.findIndex((e) => e.id === entry.id) + 1 });
   } catch {
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }

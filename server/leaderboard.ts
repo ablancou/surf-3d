@@ -19,7 +19,7 @@ export type LbEntry = {
 };
 
 const MAX = 100;
-const DATA_DIR = join(process.cwd(), "data");
+const DATA_DIR = process.env.LEADERBOARD_DATA_DIR ?? join(process.cwd(), "data");
 const FILE = join(DATA_DIR, "leaderboard.json");
 
 let cache: LbEntry[] | null = null;

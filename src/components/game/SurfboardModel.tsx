@@ -5,6 +5,7 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { boardVisualState } from "@/lib/game/boardVisualState";
 import { gameClock } from "@/lib/game/clock";
+import { useSettingsStore } from "@/stores/settingsStore";
 
 const DECK_WHITE = "#f8fafc";
 const BLUE_MAIN = "#2563eb";
@@ -36,6 +37,7 @@ function createSurfboardGeometry() {
 
 export function SurfboardModel() {
   const groupRef = useRef<THREE.Group>(null);
+  const castShadow = useSettingsStore((s) => s.perf.enableShadows);
   const geometry = useMemo(() => createSurfboardGeometry(), []);
 
   const deckMaterial = useMemo(
@@ -87,8 +89,13 @@ export function SurfboardModel() {
 
   return (
     <group ref={groupRef} scale={1.7}>
-      <mesh geometry={geometry} material={deckMaterial} />
-      <mesh position={[0, -0.04, 0]} rotation={[-Math.PI / 2, 0, 0]} material={hullMaterial}>
+      <mesh geometry={geometry} material={deckMaterial} castShadow={castShadow} />
+      <mesh
+        position={[0, -0.04, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        material={hullMaterial}
+        castShadow={castShadow}
+      >
         <planeGeometry args={[0.46, 2.05]} />
       </mesh>
       <mesh position={[0, 0.09, 0.05]} rotation={[-Math.PI / 2, 0, 0]} material={accentMaterial}>
