@@ -24,7 +24,7 @@ export function SpotSelector() {
           </Button>
         ))}
       </div>
-      <p className="hidden max-w-md text-center text-[11px] text-white/45 md:block">
+      <p className="max-w-xs text-center text-[10px] text-white/45 md:max-w-md md:text-[11px]">
         {spot.tagline}
       </p>
     </div>

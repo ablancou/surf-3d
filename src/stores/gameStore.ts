@@ -66,6 +66,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set((s) => {
       const combo = Math.min(s.combo + 1, 99);
       const multiplier = 1 + combo * 0.18;
+      const tierShake =
+        trick.id === "aerial" || trick.id === "tube_ride"
+          ? 0.28
+          : trick.id === "cutback" || trick.id === "floater"
+            ? 0.2
+            : 0.12;
       return {
         combo,
         multiplier,
@@ -74,7 +80,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
           ...s.trickPopups.slice(-4),
           { ...trick, id_key: `trick-${popupCounter++}` },
         ],
-        cameraShake: Math.min(1, s.cameraShake + 0.15),
+        cameraShake: Math.min(1, s.cameraShake + tierShake),
       };
     }),
 

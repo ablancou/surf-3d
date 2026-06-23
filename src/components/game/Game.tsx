@@ -11,6 +11,7 @@ import { GameHUD } from "@/components/ui/GameHUD";
 import { LeaderboardPanel } from "@/components/ui/LeaderboardPanel";
 import { MultiplayerPanel } from "@/components/ui/MultiplayerPanel";
 import { SpotSelector } from "@/components/ui/SpotSelector";
+import { ComboBanner } from "@/components/ui/ComboBanner";
 import { TrickPopups } from "@/components/ui/TrickPopups";
 import { TutorialOverlay } from "@/components/ui/TutorialOverlay";
 import { TubeOverlay } from "@/components/ui/TubeOverlay";
@@ -94,6 +95,7 @@ export function Game() {
       <PlayHints />
       <TutorialOverlay />
       <TrickPopups />
+      <ComboBanner />
       <TubeOverlay />
       <WipeoutOverlay />
       <ControlsOverlay />

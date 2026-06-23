@@ -1,5 +1,5 @@
 import type { GerstnerWave } from "@/lib/waves/waveConfig";
-import type { SpotPhysicsTuning, SpotTubeTuning } from "@/lib/spots/spotPhysics";
+import type { SpotMusicTuning, SpotPhysicsTuning, SpotTubeTuning } from "@/lib/spots/spotPhysics";
 
 export type SpotId = "pipeline" | "beach_break" | "point_break" | "sunset_beach";
 
@@ -19,6 +19,7 @@ export type SpotConfig = {
   spawn: { zMin: number; zMax: number; xRange: number };
   physics: SpotPhysicsTuning;
   tube: SpotTubeTuning;
+  music: SpotMusicTuning;
   atmosphere: {
     skyInclination: number;
     fogColor: string;
@@ -65,6 +66,14 @@ export const SURF_SPOTS: Record<SpotId, SpotConfig> = {
       pocketBonus: 1.35,
       rideScoreMultiplier: 3.8,
     },
+    music: {
+      baseBpm: 68,
+      chords: [82.41, 98.0, 116.54],
+      filterBase: 520,
+      kickLow: 48,
+      kickHigh: 62,
+      tubeMuffle: 0.38,
+    },
     atmosphere: {
       skyInclination: 0.48,
       fogColor: "#7eb8d4",
@@ -108,6 +117,14 @@ export const SURF_SPOTS: Record<SpotId, SpotConfig> = {
       minLip: 0.24,
       pocketBonus: 0.85,
       rideScoreMultiplier: 2.2,
+    },
+    music: {
+      baseBpm: 92,
+      chords: [130.81, 164.81, 196.0],
+      filterBase: 1150,
+      kickLow: 72,
+      kickHigh: 88,
+      tubeMuffle: 0.55,
     },
     atmosphere: {
       skyInclination: 0.55,
@@ -153,6 +170,14 @@ export const SURF_SPOTS: Record<SpotId, SpotConfig> = {
       pocketBonus: 1.0,
       rideScoreMultiplier: 2.8,
     },
+    music: {
+      baseBpm: 84,
+      chords: [98.0, 123.47, 146.83],
+      filterBase: 880,
+      kickLow: 65,
+      kickHigh: 78,
+      tubeMuffle: 0.48,
+    },
     atmosphere: {
       skyInclination: 0.5,
       fogColor: "#8ec8e0",
@@ -196,6 +221,14 @@ export const SURF_SPOTS: Record<SpotId, SpotConfig> = {
       minLip: 0.22,
       pocketBonus: 1.1,
       rideScoreMultiplier: 2.6,
+    },
+    music: {
+      baseBpm: 76,
+      chords: [116.54, 146.83, 174.61],
+      filterBase: 980,
+      kickLow: 68,
+      kickHigh: 82,
+      tubeMuffle: 0.5,
     },
     atmosphere: {
       skyInclination: 0.62,

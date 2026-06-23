@@ -27,7 +27,7 @@ test("loads game canvas and accelerates when holding W", async ({ page }) => {
   const speedAfter = await readSpeed(page);
   expect(speedAfter).toBeGreaterThan(3);
 
-  await expect(page.getByText(/Riding|Barrel/i)).toBeVisible();
+  await expect(page.locator("p.text-white\\/60").filter({ hasText: /Surfeando|Tubo|Aéreo/ })).toBeVisible();
 });
 
 async function readSpeed(page: import("@playwright/test").Page): Promise<number> {
