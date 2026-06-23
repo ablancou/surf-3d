@@ -79,12 +79,29 @@ export function SurfboardModel() {
     const group = groupRef.current;
     if (!group) return;
 
-    const { speed, tiltX, inTube } = boardVisualState;
+    const { speed, tiltX, inTube, airborne, airTime, verticalVelocity, flipUntil } =
+      boardVisualState;
     const flex = Math.sin(gameClock.time * (6 + speed * 0.5)) * speed * 0.004;
     const carveBank = tiltX * 0.15;
 
-    group.rotation.z = carveBank + flex * 0.3;
-    deckMaterial.emissiveIntensity = inTube ? 0.38 : 0.28 + speed * 0.012;
+    let pitchX = 0;
+    if (flipUntil > gameClock.time) {
+      const flipDur = 0.75;
+      const progress = 1 - (flipUntil - gameClock.time) / flipDur;
+      const eased = 1 - Math.pow(1 - progress, 2);
+      pitchX = -eased * Math.PI * 1.15;
+    } else if (airborne) {
+      const launchTilt = Math.min(1, airTime / 0.55) * 0.35;
+      const velTilt = THREE.MathUtils.clamp(-verticalVelocity * 0.06, -0.5, 0.45);
+      pitchX = launchTilt + velTilt;
+      if (airTime > 0.25) {
+        pitchX += Math.sin(gameClock.time * 8) * 0.04 * Math.min(1, airTime);
+      }
+    }
+
+    group.rotation.x = pitchX;
+    group.rotation.z = airborne ? carveBank * 0.6 + flex * 0.15 : carveBank + flex * 0.3;
+    deckMaterial.emissiveIntensity = inTube ? 0.38 : airborne ? 0.42 + airTime * 0.08 : 0.28 + speed * 0.012;
   });
 
   return (

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import type { SprayParticlesHandle } from "@/components/game/SprayParticles";
-import type { RiderTelemetry } from "@/lib/tricks/types";
+import type { RiderTelemetry, TrickId } from "@/lib/tricks/types";
 
 const emitPos = new THREE.Vector3();
 const emitVel = new THREE.Vector3();
@@ -127,4 +127,172 @@ export function emitPopSpray(
     size: 0.12,
     life: 0.5,
   });
+}
+
+function orientBasis(rotation: THREE.Quaternion) {
+  right.set(1, 0, 0).applyQuaternion(rotation);
+  forward.set(0, 0, 1).applyQuaternion(rotation);
+}
+
+export function emitAirborneMist(
+  particles: SprayParticlesHandle | null,
+  position: THREE.Vector3,
+  rotation: THREE.Quaternion,
+  airTime: number,
+  speed: number,
+) {
+  if (!particles || airTime < 0.08) return;
+  orientBasis(rotation);
+  emitPos.copy(position).addScaledVector(forward, -0.5);
+  emitVel.set(0, -0.8, 0);
+
+  particles.emit({
+    kind: "foam",
+    position: emitPos,
+    velocity: emitVel,
+    count: Math.floor(1 + airTime * 4 + speed * 0.2),
+    spread: 0.35 + airTime * 0.2,
+    speed: 0.6,
+    size: 0.1,
+    life: 0.35 + airTime * 0.15,
+  });
+}
+
+export function emitTrickSpray(
+  particles: SprayParticlesHandle | null,
+  position: THREE.Vector3,
+  rotation: THREE.Quaternion,
+  telemetry: RiderTelemetry,
+  trickId: TrickId,
+  combo = 1,
+) {
+  if (!particles) return;
+  orientBasis(rotation);
+  const comboBoost = Math.min(1.6, 1 + (combo - 1) * 0.08);
+
+  switch (trickId) {
+    case "carve_left":
+    case "carve_right": {
+      const side = trickId === "carve_right" ? 1 : -1;
+      emitPos.copy(position).addScaledVector(right, side * 0.45).addScaledVector(forward, -0.35);
+      emitVel.copy(forward).multiplyScalar(-telemetry.speed * 0.35).addScaledVector(right, side * 3);
+      particles.emit({
+        kind: "spray",
+        position: emitPos,
+        velocity: emitVel,
+        count: Math.floor((10 + telemetry.speed * 0.6) * comboBoost),
+        spread: 0.55,
+        speed: 3 + telemetry.speed * 0.15,
+        size: 0.12,
+        life: 0.55,
+      });
+      break;
+    }
+    case "pumping": {
+      emitPos.copy(position).addScaledVector(forward, -0.7);
+      emitVel.copy(forward).multiplyScalar(-1.5);
+      emitVel.y = 0.4;
+      particles.emit({
+        kind: "foam",
+        position: emitPos,
+        velocity: emitVel,
+        count: Math.floor(8 * comboBoost),
+        spread: 0.4,
+        speed: 1.2,
+        size: 0.13,
+        life: 0.7,
+      });
+      break;
+    }
+    case "bottom_turn": {
+      emitPos.copy(position).addScaledVector(forward, 0.2);
+      emitVel.set(0, 1.8, 0).addScaledVector(forward, telemetry.speed * 0.2);
+      particles.emit({
+        kind: "spray",
+        position: emitPos,
+        velocity: emitVel,
+        count: Math.floor(16 * comboBoost),
+        spread: 1.4,
+        speed: 4 + telemetry.speed * 0.2,
+        size: 0.14,
+        life: 0.65,
+      });
+      break;
+    }
+    case "cutback": {
+      emitPos.copy(position).addScaledVector(forward, -0.2);
+      emitVel.copy(forward).multiplyScalar(-telemetry.speed * 0.45);
+      emitVel.y = 2.2;
+      particles.emit({
+        kind: "splash",
+        position: emitPos,
+        velocity: emitVel,
+        count: Math.floor((22 + telemetry.speed) * comboBoost),
+        spread: 1.8,
+        speed: 5 + telemetry.speed * 0.25,
+        size: 0.16,
+        life: 0.85,
+      });
+      break;
+    }
+    case "floater": {
+      emitPos.copy(position).addScaledVector(forward, 0.4);
+      emitVel.set(0, 3.5, 0).addScaledVector(forward, telemetry.speed * 0.15);
+      particles.emit({
+        kind: "spray",
+        position: emitPos,
+        velocity: emitVel,
+        count: Math.floor(18 * comboBoost),
+        spread: 1.1,
+        speed: 4,
+        size: 0.15,
+        life: 0.75,
+      });
+      break;
+    }
+    case "aerial": {
+      emitPos.copy(position);
+      emitVel.set(0, 5, 0);
+      particles.emit({
+        kind: "splash",
+        position: emitPos,
+        velocity: emitVel,
+        count: Math.floor((35 + telemetry.speed * 2) * comboBoost),
+        spread: 2.8,
+        speed: 7 + telemetry.speed * 0.3,
+        size: 0.2,
+        life: 1.1,
+      });
+      emitPos.copy(position).addScaledVector(forward, 0.3);
+      emitVel.copy(forward).multiplyScalar(telemetry.speed * 0.25);
+      emitVel.y = 2;
+      particles.emit({
+        kind: "spray",
+        position: emitPos,
+        velocity: emitVel,
+        count: Math.floor(14 * comboBoost),
+        spread: 1.5,
+        speed: 4,
+        size: 0.13,
+        life: 0.6,
+      });
+      break;
+    }
+    case "tube_ride": {
+      emitTubeSpray(particles, position, rotation, Math.max(0.55, telemetry.tubeDepth));
+      emitPos.copy(position).addScaledVector(right, 0.5).y += 0.4;
+      emitVel.set(0, 2.5, 0);
+      particles.emit({
+        kind: "spray",
+        position: emitPos,
+        velocity: emitVel,
+        count: Math.floor((14 + telemetry.tubeDepth * 12) * comboBoost),
+        spread: 1.6,
+        speed: 3 + telemetry.tubeDepth * 2,
+        size: 0.15,
+        life: 0.9,
+      });
+      break;
+    }
+  }
 }

@@ -12,10 +12,12 @@ import { hapticPop, hapticTrick, hapticTubeEntry, hapticWipeout } from "@/lib/in
 import { gameClock } from "@/lib/game/clock";
 import { InputManager } from "@/lib/input/InputManager";
 import {
+  emitAirborneMist,
   emitCarveSpray,
   emitFoamTrail,
   emitPopSpray,
   emitTubeSpray,
+  emitTrickSpray,
   emitWipeoutSplash,
 } from "@/lib/particles/emitters";
 import { applySurfboardForces } from "@/lib/physics/surfboardForces";
@@ -163,6 +165,9 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
     boardVisualState.speed = telemetry.speed;
     boardVisualState.tiltX = telemetry.tiltX;
     boardVisualState.inTube = telemetry.inTube;
+    boardVisualState.airborne = !result.submerged;
+    boardVisualState.airTime = airTimeRef.current;
+    boardVisualState.verticalVelocity = telemetry.verticalVelocity;
     boardVisualState.x = pos.x;
     boardVisualState.y = pos.y;
     boardVisualState.z = pos.z;
@@ -206,10 +211,14 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
       const comboNow = useGameStore.getState().combo;
       audioEngine.playTrick(trick.id, comboNow);
       hapticTrick(trick.id, comboNow);
+      boardVisualState.lastTrick = trick.id;
+      if (trick.id === "aerial") {
+        boardVisualState.flipUntil = gameClock.time + 0.75;
+      }
       if (trick.id === "carve_left" || trick.id === "carve_right") {
         markTutorial("carve");
       }
-      emitCarveSpray(particles, boardPosition, boardRotation, telemetry);
+      emitTrickSpray(particles, boardPosition, boardRotation, telemetry, trick.id, comboNow);
     }
 
     spawnGrace.current = Math.max(0, spawnGrace.current - dt);
@@ -229,6 +238,10 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
     }
 
     emitFoamTrail(particles, boardPosition, boardRotation, result.speed, result.submerged);
+
+    if (!result.submerged) {
+      emitAirborneMist(particles, boardPosition, boardRotation, airTimeRef.current, result.speed);
+    }
 
     if (telemetry.inTube) {
       emitTubeSpray(particles, boardPosition, boardRotation, telemetry.tubeDepth);
