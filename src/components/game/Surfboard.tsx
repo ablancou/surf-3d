@@ -8,6 +8,7 @@ import { SurfboardModel } from "@/components/game/SurfboardModel";
 import type { SprayParticlesHandle } from "@/components/game/SprayParticles";
 import { boardVisualState } from "@/lib/game/boardVisualState";
 import { audioEngine } from "@/lib/audio/AudioEngine";
+import { hapticPop, hapticTrick, hapticTubeEntry, hapticWipeout } from "@/lib/input/haptics";
 import { gameClock } from "@/lib/game/clock";
 import { InputManager } from "@/lib/input/InputManager";
 import {
@@ -56,6 +57,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
   const trickCountRef = useRef(0);
   const runHandled = useRef(false);
   const spawnGrace = useRef(0);
+  const wasInTube = useRef(false);
 
   const setSpeed = useGameStore((s) => s.setSpeed);
   const setRiding = useGameStore((s) => s.setRiding);
@@ -81,6 +83,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
     if (!spawned.current) {
       respawnAtBest(body);
       spawnGrace.current = 2.8;
+      wasInTube.current = false;
       spawned.current = true;
       replayRecorder.current.start(gameClock.time);
       trickCountRef.current = 0;
@@ -98,6 +101,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
         const pos = body.translation();
         respawn(body, pos.x, pos.z);
         spawnGrace.current = 2.2;
+        wasInTube.current = false;
         wipeoutTimer.current = 0;
         clearWipeout();
         wipeoutDetector.current.resetCooldown();
@@ -172,9 +176,14 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
     }
 
     if (telemetry.inTube) {
+      if (!wasInTube.current) {
+        hapticTubeEntry();
+        audioEngine.playTubeRush(0.5 + telemetry.tubeDepth * 0.4);
+      }
       addTubeScore(telemetry.tubeDepth * dt * 80);
       markTutorial("tube");
     }
+    wasInTube.current = telemetry.inTube;
 
     if (Math.abs(inputManager.state.leanX) > 0.3 && result.speed > 2.5) {
       markTutorial("carve");
@@ -194,11 +203,9 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
     if (trick) {
       trickCountRef.current += 1;
       registerTrick(trick);
-      if (trick.id === "tube_ride") {
-        audioEngine.playSplash(0.9);
-      } else {
-        audioEngine.playTrickLand();
-      }
+      const comboNow = useGameStore.getState().combo;
+      audioEngine.playTrick(trick.id, comboNow);
+      hapticTrick(trick.id, comboNow);
       if (trick.id === "carve_left" || trick.id === "carve_right") {
         markTutorial("carve");
       }
@@ -215,6 +222,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
       triggerWipeout(wipeout.reason);
       emitWipeoutSplash(particles, boardPosition, result.speed);
       audioEngine.playWipeout();
+      hapticWipeout();
       body.setLinvel({ x: 0, y: -2, z: 0 }, true);
       body.applyTorqueImpulse({ x: 3, y: 2, z: -2 }, true);
       return;
@@ -238,6 +246,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
     if (inputManager.state.popUp && result.submerged && popCooldown.current <= 0) {
       emitPopSpray(particles, boardPosition, boardRotation);
       audioEngine.playSplash(0.5);
+      hapticPop();
       markTutorial("pop");
       popCooldown.current = 0.35;
     }
