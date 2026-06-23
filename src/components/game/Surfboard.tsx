@@ -20,6 +20,7 @@ import {
 import { applySurfboardForces } from "@/lib/physics/surfboardForces";
 import { WipeoutDetector } from "@/lib/physics/wipeout";
 import { findOptimalSpawn, findRespawnPoint } from "@/lib/waves/spawnSystem";
+import { sampleOceanHeight } from "@/lib/waves/oceanSampler";
 import { TrickDetector } from "@/lib/tricks/TrickDetector";
 import { buildRiderTelemetry } from "@/lib/tricks/telemetry";
 import { clipToPayload } from "@/lib/replay/encode";
@@ -113,8 +114,20 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
       false,
     );
 
+    const pos = body.translation();
+    const waterY = sampleOceanHeight(pos.x, pos.z, gameClock.time);
+
     if (!result.submerged) {
       airTimeRef.current += dt;
+      const fellThrough = pos.y < waterY - 4 || pos.y < -8;
+      const airTooLong = airTimeRef.current > 3.2 && pos.y < waterY + 1.5;
+      if (fellThrough || airTooLong) {
+        respawn(body, pos.x, pos.z);
+        airTimeRef.current = 0;
+        setSpeed(0);
+        setRiding(true);
+        return;
+      }
     } else {
       airTimeRef.current = 0;
     }
@@ -142,7 +155,6 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
       airTimeRef.current,
     );
 
-    const pos = body.translation();
     boardVisualState.speed = telemetry.speed;
     boardVisualState.tiltX = telemetry.tiltX;
     boardVisualState.inTube = telemetry.inTube;

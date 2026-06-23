@@ -16,7 +16,7 @@ import { Surfboard } from "@/components/game/Surfboard";
 import { gameClock } from "@/lib/game/clock";
 import { InputManager } from "@/lib/input/InputManager";
 import { getActiveSpot } from "@/stores/spotStore";
-import { useSettingsStore } from "@/stores/settingsStore";
+
 
 type GameSceneProps = {
   inputManager: InputManager;
@@ -27,7 +27,6 @@ export function GameScene({ inputManager }: GameSceneProps) {
   const boardRotation = useRef(new THREE.Quaternion());
   const particlesRef = useRef<SprayParticlesHandle>(null);
   const spot = getActiveSpot();
-  const perf = useSettingsStore((s) => s.perf);
 
   const onTransform = useMemo(
     () => (position: THREE.Vector3, rotation: THREE.Quaternion) => {
@@ -44,21 +43,10 @@ export function GameScene({ inputManager }: GameSceneProps) {
 
   return (
     <>
-      <fog attach="fog" args={[spot.atmosphere.fogColor, spot.atmosphere.fogNear, spot.atmosphere.fogFar]} />
-      <hemisphereLight args={["#c8e4f8", spot.atmosphere.shallowWater, 0.75]} />
-      <ambientLight intensity={0.52} />
-      <directionalLight
-        castShadow={perf.enableShadows}
-        intensity={2.2}
-        position={[40, 60, 20]}
-        shadow-mapSize={[perf.shadowMapSize, perf.shadowMapSize]}
-        shadow-camera-left={-40}
-        shadow-camera-right={40}
-        shadow-camera-top={40}
-        shadow-camera-bottom={-40}
-        shadow-camera-near={0.5}
-        shadow-camera-far={200}
-      />
+      <fog attach="fog" args={[spot.atmosphere.fogColor, spot.atmosphere.fogNear, spot.atmosphere.fogFar * 1.35]} />
+      <hemisphereLight args={["#d4ecff", spot.atmosphere.shallowWater, 0.85]} />
+      <ambientLight intensity={0.62} />
+      <directionalLight intensity={2.4} position={[40, 60, 20]} />
 
       <Sky />
       <OceanSystem />

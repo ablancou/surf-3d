@@ -73,7 +73,7 @@ export function OceanIFFT() {
   });
 
   return (
-    <mesh ref={meshRef} rotation-x={-Math.PI / 2} frustumCulled={false} receiveShadow>
+    <mesh ref={meshRef} rotation-x={-Math.PI / 2} frustumCulled={false}>
       <planeGeometry args={[OCEAN_SIZE, OCEAN_SIZE, segments, segments]} />
       <shaderMaterial
         ref={materialRef}

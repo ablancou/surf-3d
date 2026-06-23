@@ -34,7 +34,7 @@ function RemoteSurfer({ player }: { player: RemotePlayer }) {
 
   return (
     <group ref={groupRef}>
-      <mesh castShadow>
+      <mesh>
         <boxGeometry args={[0.5, 0.14, 1.9]} />
         <meshStandardMaterial color="#38bdf8" transparent opacity={0.75} roughness={0.4} />
       </mesh>

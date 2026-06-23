@@ -78,12 +78,12 @@ export function SurfboardModel() {
 
   return (
     <group ref={groupRef} scale={1.25}>
-      <mesh geometry={geometry} castShadow receiveShadow material={deckMaterial} />
-      <mesh ref={noseRef} position={[0, 0.08, 0.75]} castShadow>
+      <mesh geometry={geometry} material={deckMaterial} />
+      <mesh ref={noseRef} position={[0, 0.08, 0.75]}>
         <boxGeometry args={[0.18, 0.03, 0.35]} />
         <meshStandardMaterial color="#fdba74" roughness={0.38} />
       </mesh>
-      <mesh ref={tailRef} position={[0, 0.07, -0.7]} castShadow>
+      <mesh ref={tailRef} position={[0, 0.07, -0.7]}>
         <boxGeometry args={[0.22, 0.03, 0.28]} />
         <meshStandardMaterial color="#fed7aa" roughness={0.4} />
       </mesh>
