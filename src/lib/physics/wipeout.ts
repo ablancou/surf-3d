@@ -1,3 +1,4 @@
+import { getSpotPhysics } from "@/lib/spots/spotPhysics";
 import type { RiderTelemetry, WipeoutEvent, WipeoutReason } from "@/lib/tricks/types";
 
 const WIPEOUT_COOLDOWN = 2.5;
@@ -22,19 +23,21 @@ export class WipeoutDetector {
 }
 
 function detectWipeout(t: RiderTelemetry): WipeoutReason | null {
-  if (t.submerged && t.boardUpY < 0.08 && t.speed > 2.5) {
+  const s = getSpotPhysics().wipeoutScale;
+
+  if (t.submerged && t.boardUpY < 0.08 / s && t.speed > 2.5 * s) {
     return "rail_bury";
   }
 
-  if (t.submerged && t.tiltZ > 1.05 && t.speed > 4.5 && t.leanZ > 0.4) {
+  if (t.submerged && t.tiltZ > 1.05 * s && t.speed > 4.5 * s && t.leanZ > 0.4) {
     return "nose_dive";
   }
 
-  if (t.submerged && Math.abs(t.tiltX) > 1.3 && t.speed > 5.5) {
+  if (t.submerged && Math.abs(t.tiltX) > 1.3 * s && t.speed > 5.5 * s) {
     return "bail";
   }
 
-  if (!t.submerged && t.airTime > 3.2 && t.verticalVelocity < -9) {
+  if (!t.submerged && t.airTime > 3.2 * s && t.verticalVelocity < -9 / s) {
     return "bail";
   }
 

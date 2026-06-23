@@ -1,5 +1,6 @@
 import type { RapierRigidBody } from "@react-three/rapier";
 import * as THREE from "three";
+import { getSpotPhysics } from "@/lib/spots/spotPhysics";
 import { sampleOcean } from "@/lib/waves/oceanSampler";
 import type { GameInputState } from "@/lib/input/types";
 
@@ -8,20 +9,12 @@ const BOARD_HALF_LENGTH = 1.05;
 const BOARD_HALF_WIDTH = 0.28;
 const BOARD_MASS = 7;
 
-const BUOYANCY = 140;
 const SURFACE_SPRING = 55;
 const WATER_DRAG = 0.91;
 const AIR_DRAG = 0.994;
-const LIFT_FACTOR = 2.2;
-const MAX_SPEED = 24;
 const ALIGN_TORQUE = 24;
 const INPUT_TORQUE = 9;
-const INPUT_ACCEL = 10;
 const POP_IMPULSE = 3.8;
-const RAIL_GRIP = 2.1;
-const TRIM_FACTOR = 1.1;
-const PUMP_FACTOR = 2.4;
-const TUBE_GRIP = 1.4;
 const MAX_SINK_SPEED = -1.8;
 
 const sampleOut = {
@@ -65,6 +58,7 @@ export function applySurfboardForces(
   dt: number,
   wipedOut: boolean,
 ): SurfboardPhysicsResult {
+  const p = getSpotPhysics();
   const pos = body.translation();
   const linvel = body.linvel();
   vel.set(linvel.x, linvel.y, linvel.z);
@@ -92,7 +86,7 @@ export function applySurfboardForces(
     if (submersion > 0) {
       submerged = true;
       totalSubmersion += submersion * point.weight;
-      buoyancySum += submersion * BUOYANCY * point.weight * dt;
+      buoyancySum += submersion * p.buoyancy * point.weight * dt;
     }
   }
 
@@ -132,8 +126,8 @@ export function applySurfboardForces(
 
     if (downhill.lengthSq() > 0.0001) {
       const alignment = Math.max(vel.dot(downhill), 0);
-      const lift = alignment * LIFT_FACTOR * dt;
-      const railBoost = Math.abs(input.leanX) * RAIL_GRIP * dt;
+      const lift = alignment * p.liftFactor * dt;
+      const railBoost = Math.abs(input.leanX) * p.railGrip * dt;
       body.applyImpulse(
         {
           x: downhill.x * (lift + railBoost),
@@ -144,12 +138,12 @@ export function applySurfboardForces(
       );
 
       if (faceAlignment > 0.45 && Math.abs(input.leanX) < 0.35) {
-        const trim = faceAlignment * TRIM_FACTOR * dt;
+        const trim = faceAlignment * p.trimFactor * dt;
         body.applyImpulse({ x: downhill.x * trim, y: 0, z: downhill.z * trim }, true);
       }
 
       if (downhillSpeed < -0.6 && input.leanZ > 0.2) {
-        const pump = input.leanZ * PUMP_FACTOR * dt;
+        const pump = input.leanZ * p.pumpFactor * dt;
         body.applyImpulse({ x: downhill.x * pump, y: 0, z: downhill.z * pump }, true);
       }
 
@@ -162,7 +156,7 @@ export function applySurfboardForces(
     boardUp.set(0, 1, 0).applyQuaternion(rotation);
     targetUp.copy(avgNormal);
     torqueAxis.crossVectors(boardUp, targetUp);
-    const tubeGrip = maxSteepness > 0.34 && faceAlignment > 0.45 ? TUBE_GRIP : 1;
+    const tubeGrip = maxSteepness > 0.34 && faceAlignment > 0.45 ? p.tubeGrip : 1;
     const alignStrength = torqueAxis.length() * ALIGN_TORQUE * tubeGrip * dt;
     if (alignStrength > 0.0001) {
       torqueAxis.normalize();
@@ -192,7 +186,7 @@ export function applySurfboardForces(
     true,
   );
 
-  const accel = INPUT_ACCEL * dt;
+  const accel = p.inputAccel * dt;
   if (submerged && downhill.lengthSq() > 0.0001) {
     const drive = input.leanZ * accel * 1.55;
     body.applyImpulse(
@@ -221,10 +215,10 @@ export function applySurfboardForces(
   }
 
   speed = Math.sqrt(linvel.x ** 2 + linvel.z ** 2);
-  if (speed > MAX_SPEED) {
-    const scale = MAX_SPEED / speed;
+  if (speed > p.maxSpeed) {
+    const scale = p.maxSpeed / speed;
     body.setLinvel({ x: linvel.x * scale, y: linvel.y, z: linvel.z * scale }, true);
-    speed = MAX_SPEED;
+    speed = p.maxSpeed;
   }
 
   return { submerged, speed, waterHeight: avgHeight, waveSteepness: maxSteepness, downhillSpeed };

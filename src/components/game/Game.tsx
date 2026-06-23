@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { GameScene } from "@/components/game/GameScene";
 import { ControlsOverlay } from "@/components/ui/ControlsOverlay";
+import { TouchControls } from "@/components/ui/TouchControls";
 import { PlayHints } from "@/components/ui/PlayHints";
 import { GameHUD } from "@/components/ui/GameHUD";
 import { LeaderboardPanel } from "@/components/ui/LeaderboardPanel";
@@ -96,6 +97,7 @@ export function Game() {
       <TubeOverlay />
       <WipeoutOverlay />
       <ControlsOverlay />
+      {inputManagerRef.current && <TouchControls inputManager={inputManagerRef.current} />}
     </div>
   );
 }

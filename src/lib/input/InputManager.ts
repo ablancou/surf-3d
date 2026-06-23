@@ -1,3 +1,4 @@
+import { getInputProfile, type InputProfile } from "@/lib/input/deviceProfile";
 import { DEFAULT_INPUT, type GameInputState } from "./types";
 
 const KEY_MAP: Record<string, Partial<GameInputState>> = {
@@ -25,7 +26,27 @@ export class InputManager {
   private gamepadLean = { x: 0, y: 0 };
   private gamepadPop = false;
   private smoothLean = { x: 0, z: 0 };
+  private virtualActive = false;
+  private virtualLean = { x: 0, z: 0 };
+  private virtualPop = false;
+  private profile: InputProfile = getInputProfile();
   private bound = false;
+
+  setVirtualLean(x: number, z: number) {
+    this.virtualActive = true;
+    this.virtualLean.x = x;
+    this.virtualLean.z = z;
+  }
+
+  clearVirtualLean() {
+    this.virtualActive = false;
+    this.virtualLean.x = 0;
+    this.virtualLean.z = 0;
+  }
+
+  requestPop() {
+    this.virtualPop = true;
+  }
 
   bind(el: HTMLElement) {
     if (this.bound) return;
@@ -70,19 +91,21 @@ export class InputManager {
     this.state.leanZ = 0;
     this.state.popUp = false;
 
+    const kb = this.profile.keyboardScale;
     for (const code of this.keys) {
       const map = KEY_MAP[code];
-      if (map?.leanX) this.state.leanX += map.leanX;
-      if (map?.leanZ) this.state.leanZ += map.leanZ;
+      if (map?.leanX) this.state.leanX += map.leanX * kb;
+      if (map?.leanZ) this.state.leanZ += map.leanZ * kb;
       if (POP_KEYS.has(code)) this.state.popUp = true;
     }
 
-    if (this.pointerActive) {
+    if (this.virtualActive) {
+      this.state.leanX = clamp(this.virtualLean.x);
+      this.state.leanZ = clamp(this.virtualLean.z);
+    } else if (this.pointerActive) {
       this.state.leanX = clamp(this.pointerLean.x);
       this.state.leanZ = clamp(this.pointerLean.y);
-    }
-
-    if (this.touchId !== null) {
+    } else if (this.touchId !== null) {
       this.state.leanX = clamp(this.pointerLean.x);
       this.state.leanZ = clamp(this.pointerLean.y);
     }
@@ -98,11 +121,12 @@ export class InputManager {
       this.state.leanZ = clamp(this.gamepadLean.y);
     }
 
-    if (this.gamepadPop) this.state.popUp = true;
+    if (this.gamepadPop || this.virtualPop) this.state.popUp = true;
+    this.virtualPop = false;
 
     const targetX = clamp(this.state.leanX);
     const targetZ = clamp(this.state.leanZ);
-    const smooth = 0.24;
+    const smooth = this.virtualActive ? 0.32 : this.profile.smoothFactor;
     this.smoothLean.x += (targetX - this.smoothLean.x) * smooth;
     this.smoothLean.z += (targetZ - this.smoothLean.z) * smooth;
     this.state.leanX = this.smoothLean.x;
@@ -161,8 +185,8 @@ export class InputManager {
     if (!this.pointerActive || e.pointerType === "touch") return;
     const dx = e.clientX - this.pointerOrigin.x;
     const dy = e.clientY - this.pointerOrigin.y;
-    this.pointerLean.x = dx / 120;
-    this.pointerLean.y = -dy / 120;
+    this.pointerLean.x = dx / this.profile.pointerRadius;
+    this.pointerLean.y = -dy / this.profile.pointerRadius;
   };
 
   private onPointerUp = (e: PointerEvent) => {
@@ -173,7 +197,7 @@ export class InputManager {
   };
 
   private onTouchStart = (e: TouchEvent) => {
-    if (this.touchId !== null) return;
+    if (this.virtualActive || this.touchId !== null) return;
     const touch = e.touches[0];
     if (!touch) return;
     e.preventDefault();
@@ -191,8 +215,8 @@ export class InputManager {
     e.preventDefault();
     const dx = touch.clientX - this.touchOrigin.x;
     const dy = touch.clientY - this.touchOrigin.y;
-    this.pointerLean.x = dx / 90;
-    this.pointerLean.y = -dy / 90;
+    this.pointerLean.x = dx / this.profile.touchRadius;
+    this.pointerLean.y = -dy / this.profile.touchRadius;
   };
 
   private onTouchEnd = (e: TouchEvent) => {

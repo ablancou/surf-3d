@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { getSpotTube } from "@/lib/spots/spotPhysics";
 import { sampleOcean, sampleOceanHeight } from "@/lib/waves/oceanSampler";
 
 export type TubeSample = {
@@ -67,17 +68,18 @@ export function sampleTubeGeometry(
 
   const enclosure = (hLeft + hRight) * 0.5 - hCenter;
   const lipOverhead = hLip - boardY;
+  const tube = getSpotTube();
   const pocketDepth = Math.min(
     1,
-    Math.max(0, enclosure * 0.8 + lipOverhead * 0.15 + steepness * 0.4),
+    Math.max(0, (enclosure * 0.8 + lipOverhead * 0.15 + steepness * 0.4) * tube.pocketBonus),
   );
 
   const inTube =
     submerged &&
-    speed > 3 &&
-    steepness > 0.28 &&
-    enclosure > 0.18 &&
-    lipOverhead > 0.22 &&
+    speed > tube.minSpeed &&
+    steepness > tube.minSteepness &&
+    enclosure > tube.minEnclosure &&
+    lipOverhead > tube.minLip &&
     boardForward.dot(downhill) > 0.15;
 
   return { enclosure, lipOverhead, pocketDepth, inTube };

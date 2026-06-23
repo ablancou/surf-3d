@@ -14,34 +14,35 @@ export function ControlsOverlay() {
   const setPerfTier = useSettingsStore((s) => s.setPerfTier);
 
   return (
-    <div className="pointer-events-auto absolute right-4 bottom-16 md:bottom-6">
+    <div className="pointer-events-auto absolute right-4 bottom-28 md:bottom-6">
       <Button
         variant="secondary"
         size="sm"
         className="bg-black/40 text-white backdrop-blur hover:bg-black/55"
         onClick={() => setOpen((v) => !v)}
       >
-        Controls
+        Controles
       </Button>
       {open && (
         <div className="mt-2 w-72 rounded-xl border border-white/20 bg-black/55 p-4 text-sm text-white/90 backdrop-blur-md">
-          <p className="mb-2 font-semibold text-white">Keyboard + Mouse</p>
+          <p className="mb-2 font-semibold text-white">Teclado + ratón</p>
           <ul className="mb-3 space-y-1 text-white/80">
-            <li>WASD / Arrows — lean & carve</li>
-            <li>Space — pop up</li>
-            <li>Click + drag — lean direction</li>
+            <li>WASD / Flechas — inclinar y carve</li>
+            <li>Espacio — pop / salto</li>
+            <li>Click + arrastre — dirección</li>
           </ul>
-          <p className="mb-2 font-semibold text-white">Touch</p>
+          <p className="mb-2 font-semibold text-white">Móvil</p>
           <ul className="mb-3 space-y-1 text-white/80">
-            <li>Drag — lean & carve</li>
-            <li>Release — pop up</li>
+            <li>Pad izquierdo — carve y pump</li>
+            <li>Botón POP — salto</li>
+            <li>Arrastre en pantalla — alternativa</li>
           </ul>
-          <p className="mb-2 font-semibold text-white">Xbox Controller</p>
+          <p className="mb-2 font-semibold text-white">Mando Xbox</p>
           <ul className="mb-3 space-y-1 text-white/80">
-            <li>Left stick — lean</li>
-            <li>RT or A — pop up</li>
+            <li>Stick izquierdo — inclinar</li>
+            <li>RT o A — pop</li>
           </ul>
-          <p className="mb-2 font-semibold text-white">Graphics</p>
+          <p className="mb-2 font-semibold text-white">Gráficos</p>
           <p className="mb-2 text-xs text-white/60">
             Renderer: {rendererKind.toUpperCase()}
           </p>
@@ -63,7 +64,7 @@ export function ControlsOverlay() {
               Gerstner
             </Button>
           </div>
-          <p className="mb-1 text-xs text-white/60">Performance</p>
+          <p className="mb-1 text-xs text-white/60">Rendimiento</p>
           <div className="flex gap-1">
             {(["high", "medium", "low"] as PerfTier[]).map((tier) => (
               <Button

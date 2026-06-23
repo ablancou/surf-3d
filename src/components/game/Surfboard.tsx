@@ -19,6 +19,7 @@ import {
 } from "@/lib/particles/emitters";
 import { applySurfboardForces } from "@/lib/physics/surfboardForces";
 import { WipeoutDetector } from "@/lib/physics/wipeout";
+import { getSpotTube } from "@/lib/spots/spotPhysics";
 import { findOptimalSpawn, findRespawnPoint } from "@/lib/waves/spawnSystem";
 import { sampleOceanHeight } from "@/lib/waves/oceanSampler";
 import { TrickDetector } from "@/lib/tricks/TrickDetector";
@@ -165,7 +166,8 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
     setTubeState(telemetry.inTube, telemetry.tubeDepth);
 
     if (result.submerged && result.speed > 1.5) {
-      const rideRate = telemetry.inTube ? 3.2 : 2.4;
+      const tubeTune = getSpotTube();
+      const rideRate = telemetry.inTube ? tubeTune.rideScoreMultiplier : 2.4;
       addRideScore(result.speed * dt * rideRate);
     }
 
