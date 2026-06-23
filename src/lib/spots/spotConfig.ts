@@ -45,8 +45,8 @@ export const SURF_SPOTS: Record<SpotId, SpotConfig> = {
       fogColor: "#7eb8d4",
       fogNear: 35,
       fogFar: 160,
-      deepWater: "#041828",
-      shallowWater: "#15608a",
+      deepWater: "#0a3048",
+      shallowWater: "#1f7aa8",
     },
   },
   beach_break: {
@@ -68,8 +68,8 @@ export const SURF_SPOTS: Record<SpotId, SpotConfig> = {
       fogColor: "#9ecae1",
       fogNear: 40,
       fogFar: 200,
-      deepWater: "#0a2a4a",
-      shallowWater: "#1a6b8a",
+      deepWater: "#124060",
+      shallowWater: "#2a8aaa",
     },
   },
   point_break: {
@@ -91,8 +91,8 @@ export const SURF_SPOTS: Record<SpotId, SpotConfig> = {
       fogColor: "#8ec8e0",
       fogNear: 38,
       fogFar: 175,
-      deepWater: "#082238",
-      shallowWater: "#1a7a9a",
+      deepWater: "#103550",
+      shallowWater: "#2a90b0",
     },
   },
   sunset_beach: {
@@ -114,8 +114,8 @@ export const SURF_SPOTS: Record<SpotId, SpotConfig> = {
       fogColor: "#f0b88a",
       fogNear: 45,
       fogFar: 190,
-      deepWater: "#1a2848",
-      shallowWater: "#3a8aaa",
+      deepWater: "#243858",
+      shallowWater: "#4a9aba",
     },
   },
 };

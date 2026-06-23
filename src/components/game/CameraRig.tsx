@@ -6,8 +6,10 @@ import * as THREE from "three";
 import { boardVisualState } from "@/lib/game/boardVisualState";
 import { useGameStore } from "@/stores/gameStore";
 
-const BASE_FOV = 60;
-const TUBE_FOV = 52;
+const BASE_FOV = 62;
+const TUBE_FOV = 54;
+const CAMERA_DISTANCE = 11;
+const LOOK_AHEAD = 18;
 
 type CameraRigProps = {
   targetPosition: THREE.Vector3;
@@ -23,14 +25,20 @@ const forward = new THREE.Vector3();
 
 export function CameraRig({ targetPosition, targetRotation }: CameraRigProps) {
   const { camera } = useThree();
-  const smoothPos = useRef(new THREE.Vector3(0, 9.5, -22));
-  const smoothLook = useRef(new THREE.Vector3(0, 0.8, 14));
+  const smoothPos = useRef(new THREE.Vector3(0, 8.5, -18));
+  const smoothLook = useRef(new THREE.Vector3(0, 0.8, 12));
   const snapped = useRef(false);
+  const wasWipedOut = useRef(false);
 
   useFrame((_, delta) => {
     const state = useGameStore.getState();
-    const shake = state.cameraShake;
+    const shake = state.wipedOut ? state.cameraShake * 0.35 : state.cameraShake;
     state.tickCameraShake(delta);
+
+    if (wasWipedOut.current && !state.wipedOut) {
+      snapped.current = false;
+    }
+    wasWipedOut.current = state.wipedOut;
 
     const targetFov = state.inTube ? TUBE_FOV : BASE_FOV;
     if ("fov" in camera) {
@@ -48,11 +56,11 @@ export function CameraRig({ targetPosition, targetRotation }: CameraRigProps) {
     const ty = boardVisualState.y;
     const tz = boardVisualState.z;
 
-    cameraOffset.copy(forward).multiplyScalar(-14);
-    cameraOffset.y = 7.5;
+    cameraOffset.copy(forward).multiplyScalar(-CAMERA_DISTANCE);
+    cameraOffset.y = 6.8;
 
-    lookOffset.copy(forward).multiplyScalar(22);
-    lookOffset.y = 1.2;
+    lookOffset.copy(forward).multiplyScalar(LOOK_AHEAD);
+    lookOffset.y = 1.0;
 
     desiredPosition.set(tx, ty, tz).add(cameraOffset);
     desiredLookAt.set(tx, 0.8, tz).add(lookOffset);
@@ -72,9 +80,10 @@ export function CameraRig({ targetPosition, targetRotation }: CameraRigProps) {
       snapped.current = true;
     }
 
-    const t = 1 - Math.exp(-6 * delta);
+    const followRate = state.wipedOut ? 14 : 5.5;
+    const t = 1 - Math.exp(-followRate * delta);
     smoothPos.current.lerp(desiredPosition, t);
-    smoothLook.current.lerp(desiredLookAt, t);
+    smoothLook.current.lerp(desiredLookAt, t * 0.85);
 
     camera.position.copy(smoothPos.current);
     camera.lookAt(smoothLook.current);

@@ -85,19 +85,20 @@ void main() {
   vec3 L = normalize(uSunDirection);
   vec3 H = normalize(L + V);
 
-  float fresnel = pow(1.0 - max(dot(N, V), 0.0), 3.0);
-  float spec = pow(max(dot(N, H), 0.0), 96.0);
-  float diffuse = max(dot(N, L), 0.0) * 0.45 + 0.38;
+  float fresnel = pow(1.0 - max(dot(N, V), 0.0), 2.6);
+  float spec = pow(max(dot(N, H), 0.0), 72.0);
+  float diffuse = max(dot(N, L), 0.0) * 0.42 + 0.52;
 
-  float depthMix = smoothstep(-2.5, 1.2, vDepth);
+  float depthMix = smoothstep(-1.8, 2.0, vDepth);
   vec3 water = mix(uDeepColor, uShallowColor, depthMix);
 
   float crestFoam = smoothstep(uFoamThreshold, uFoamThreshold + 0.35, vFoam);
   vec3 color = mix(water, uFoamColor, crestFoam * 0.85);
 
-  color += vec3(spec * 0.55);
-  color = mix(color, uShallowColor * 1.2, fresnel * 0.45);
+  color += vec3(spec * 0.65);
+  color = mix(color, uShallowColor * 1.35, fresnel * 0.55);
   color *= diffuse;
+  color = max(color, water * 0.55 + vec3(0.04, 0.06, 0.08));
 
   gl_FragColor = vec4(color, 1.0);
 }

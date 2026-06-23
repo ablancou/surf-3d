@@ -44,8 +44,8 @@ export function GameScene({ inputManager }: GameSceneProps) {
 
   return (
     <>
-      <hemisphereLight args={["#b8d9f0", spot.atmosphere.deepWater, 0.65]} />
-      <ambientLight intensity={0.45} />
+      <hemisphereLight args={["#c8e4f8", spot.atmosphere.shallowWater, 0.75]} />
+      <ambientLight intensity={0.52} />
       <directionalLight
         castShadow={perf.enableShadows}
         intensity={2.2}
