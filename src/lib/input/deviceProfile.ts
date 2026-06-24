@@ -18,9 +18,9 @@ export function getInputProfile(): InputProfile {
   const mobile = isCoarsePointer();
   return {
     mobile,
-    touchRadius: mobile ? 68 : 90,
+    touchRadius: mobile ? 82 : 90,
     pointerRadius: 120,
-    smoothFactor: mobile ? 0.17 : 0.24,
-    keyboardScale: mobile ? 0.9 : 1,
+    smoothFactor: mobile ? 0.2 : 0.24,
+    keyboardScale: mobile ? 0.95 : 1,
   };
 }

@@ -29,6 +29,7 @@ export class InputManager {
   private virtualActive = false;
   private virtualLean = { x: 0, z: 0 };
   private virtualPop = false;
+  private touchMoved = false;
   private profile: InputProfile = getInputProfile();
   private bound = false;
 
@@ -126,7 +127,7 @@ export class InputManager {
 
     const targetX = clamp(this.state.leanX);
     const targetZ = clamp(this.state.leanZ);
-    const smooth = this.virtualActive ? 0.32 : this.profile.smoothFactor;
+    const smooth = this.virtualActive ? 0.42 : this.profile.smoothFactor;
     this.smoothLean.x += (targetX - this.smoothLean.x) * smooth;
     this.smoothLean.z += (targetZ - this.smoothLean.z) * smooth;
     this.state.leanX = this.smoothLean.x;
@@ -206,6 +207,7 @@ export class InputManager {
     this.touchOrigin.y = touch.clientY;
     this.pointerLean.x = 0;
     this.pointerLean.y = 0;
+    this.touchMoved = false;
   };
 
   private onTouchMove = (e: TouchEvent) => {
@@ -215,6 +217,7 @@ export class InputManager {
     e.preventDefault();
     const dx = touch.clientX - this.touchOrigin.x;
     const dy = touch.clientY - this.touchOrigin.y;
+    if (Math.abs(dx) > 10 || Math.abs(dy) > 10) this.touchMoved = true;
     this.pointerLean.x = dx / this.profile.touchRadius;
     this.pointerLean.y = -dy / this.profile.touchRadius;
   };
@@ -225,7 +228,10 @@ export class InputManager {
     this.touchId = null;
     this.pointerLean.x = 0;
     this.pointerLean.y = 0;
-    this.state.popUp = true;
+    if (!this.virtualActive && !this.touchMoved) {
+      this.virtualPop = true;
+    }
+    this.touchMoved = false;
   };
 }
 

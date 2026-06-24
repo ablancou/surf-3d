@@ -14,7 +14,7 @@ export function ControlsOverlay() {
   const setPerfTier = useSettingsStore((s) => s.setPerfTier);
 
   return (
-    <div className="pointer-events-auto absolute right-4 bottom-28 md:bottom-6">
+    <div className="pointer-events-auto absolute right-3 bottom-[10.5rem] md:right-4 md:bottom-6">
       <Button
         variant="secondary"
         size="sm"
@@ -33,9 +33,9 @@ export function ControlsOverlay() {
           </ul>
           <p className="mb-2 font-semibold text-white">Móvil</p>
           <ul className="mb-3 space-y-1 text-white/80">
-            <li>Pad izquierdo — carve y pump</li>
-            <li>Botón POP — salto</li>
-            <li>Arrastre en pantalla — alternativa</li>
+            <li>Pad izquierdo — mantén para remar (↑)</li>
+            <li>Desliza ← → para carve suave</li>
+            <li>Botón POP (derecha) — aéreo</li>
           </ul>
           <p className="mb-2 font-semibold text-white">Mando Xbox</p>
           <ul className="mb-3 space-y-1 text-white/80">

@@ -8,6 +8,7 @@ import { gameClock } from "@/lib/game/clock";
 import { OceanSimulator } from "@/lib/waves/OceanSimulator";
 import { bindOceanSimulator, setOceanMode } from "@/lib/waves/oceanSampler";
 import { ifftOceanFragmentShader, ifftOceanVertexShader } from "@/lib/waves/oceanIFFTShader";
+import { IFFT_LENGTH } from "@/lib/waves/OceanSimulator";
 import { OCEAN_SIZE } from "@/lib/waves/waveConfig";
 import { getActiveSpot } from "@/stores/spotStore";
 import { useSettingsStore } from "@/stores/settingsStore";
@@ -38,7 +39,8 @@ export function OceanIFFT() {
     () => ({
       uTime: { value: 0 },
       uHeightMap: { value: textureRef.current },
-      uOceanSize: { value: OCEAN_SIZE },
+      uOceanDomain: { value: IFFT_LENGTH },
+      uOceanHalf: { value: IFFT_LENGTH * 0.5 },
       uHeightScale: { value: spot.ifft.heightScale },
       uDeepColor: { value: new THREE.Color(spot.atmosphere.deepWater) },
       uShallowColor: { value: new THREE.Color(spot.atmosphere.shallowWater) },

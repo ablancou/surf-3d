@@ -1,7 +1,8 @@
 export const ifftOceanVertexShader = /* glsl */ `
 uniform float uTime;
 uniform sampler2D uHeightMap;
-uniform float uOceanSize;
+uniform float uOceanDomain;
+uniform float uOceanHalf;
 uniform float uHeightScale;
 
 varying vec3 vWorldPos;
@@ -10,17 +11,18 @@ varying float vFoam;
 varying float vDepth;
 
 float sampleH(vec2 worldXZ) {
-  vec2 uv = worldXZ / uOceanSize + 0.5;
+  vec2 uv = fract((worldXZ + vec2(uOceanHalf, uOceanHalf)) / uOceanDomain);
   return texture2D(uHeightMap, uv).r * uHeightScale;
 }
 
 void main() {
   vec3 p = position;
-  float h = sampleH(p.xz);
-  float hR = sampleH(p.xz + vec2(0.8, 0.0));
-  float hF = sampleH(p.xz + vec2(0.0, 0.8));
-  float hL = sampleH(p.xz - vec2(0.8, 0.0));
-  float hB = sampleH(p.xz - vec2(0.0, 0.8));
+  vec2 worldXZ = (modelMatrix * vec4(p.x, 0.0, p.z, 1.0)).xz;
+  float h = sampleH(worldXZ);
+  float hR = sampleH(worldXZ + vec2(0.8, 0.0));
+  float hF = sampleH(worldXZ + vec2(0.0, 0.8));
+  float hL = sampleH(worldXZ - vec2(0.8, 0.0));
+  float hB = sampleH(worldXZ - vec2(0.0, 0.8));
 
   p.y += h;
   vec3 tangent = vec3(1.0, hR - hL, 0.0);

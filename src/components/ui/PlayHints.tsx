@@ -46,27 +46,27 @@ function pickHint(
     return mobile
       ? {
           id: "paddle",
-          text: "Pad izquierdo — rema hacia la ola",
-          detail: "Empuja arriba en el pad o arrastra en pantalla",
+          text: "Toca el pad y mantén — rema solo",
+          detail: "Solo toca el pad: rema hacia la ola sin mover el dedo",
         }
       : {
           id: "paddle",
           text: "↑ W — rema hacia la ola",
-          detail: "También puedes arrastrar el dedo o usar el stick",
+          detail: "Mantén W unos segundos y la ola te lleva",
         };
   }
-  if (speed < 3) {
+  if (speed < 4) {
     return {
       id: "catch",
-      text: mobile ? "Empuja arriba en el pad para coger la ola" : "Mantén W para coger la ola",
+      text: mobile ? "Empuja arriba — la ola te acelera sola" : "Mantén W — la ola te acelera sola",
       detail: spotTagline,
     };
   }
   if (speed < 7) {
     return {
       id: "carve",
-      text: mobile ? "Pad — inclínate en la pared" : "A/D — carve en la pared",
-      detail: "Inclínate en la ola para no perder velocidad",
+      text: mobile ? "Pad — suave carve en la pared" : "A/D — carve suave en la pared",
+      detail: "Puedes ir recto con W — el juego te mantiene velocidad",
     };
   }
   if (speed < 12) {

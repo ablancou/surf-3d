@@ -59,7 +59,8 @@ export function findOptimalSpawn(time: number): SpawnPoint {
       const faceQuality = slope * 2 + faceDrop * 0.8 + center.normal.y * 0.3;
 
       if (faceQuality > best.quality) {
-        best = buildSpawn(x, z, time, faceQuality, (7 + Math.min(slope * 4, 5)) * boostMul);
+        const boost = (9 + Math.min(slope * 3.5, 4)) * boostMul;
+        best = buildSpawn(x, z, time, faceQuality, boost);
       }
     }
   }

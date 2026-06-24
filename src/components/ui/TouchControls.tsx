@@ -9,8 +9,36 @@ type TouchControlsProps = {
   inputManager: InputManager;
 };
 
-const PAD_SIZE = 128;
-const PAD_MAX = 52;
+const PAD_SIZE = 148;
+const PAD_MAX = 58;
+const DEADZONE = 14;
+/** Mantener el dedo en el pad sin mover = remar hacia adelante */
+const IDLE_PADDLE_Z = 0.82;
+
+function clamp(v: number, min = -1, max = 1) {
+  return Math.max(min, Math.min(max, v));
+}
+
+function processPadLean(dx: number, dy: number): { x: number; z: number } {
+  const len = Math.sqrt(dx * dx + dy * dy);
+
+  if (len < DEADZONE) {
+    return { x: 0, z: IDLE_PADDLE_Z };
+  }
+
+  const clamped = Math.min(len, PAD_MAX);
+  const scale = clamped / PAD_MAX;
+  let leanX = (dx / PAD_MAX) * scale;
+  let leanZ = (-dy / PAD_MAX) * scale;
+
+  // Snap hacia arriba: remar es más fácil que carve preciso
+  if (leanZ > 0.12 && Math.abs(leanX) < leanZ * 0.6) {
+    leanZ = Math.min(1, leanZ * 1.2 + 0.18);
+    leanX *= 0.55;
+  }
+
+  return { x: clamp(leanX), z: clamp(leanZ) };
+}
 
 export function TouchControls({ inputManager }: TouchControlsProps) {
   const [visible, setVisible] = useState(false);
@@ -32,18 +60,21 @@ export function TouchControls({ inputManager }: TouchControlsProps) {
 
   const applyLean = useCallback(
     (dx: number, dy: number) => {
+      const { x, z } = processPadLean(dx, dy);
+      inputManager.setVirtualLean(x, z);
+
       const len = Math.sqrt(dx * dx + dy * dy);
-      const clamped = Math.min(len, PAD_MAX);
-      const scale = clamped / PAD_MAX;
-      const angle = Math.atan2(dy, dx);
-      inputManager.setVirtualLean(
-        Math.cos(angle) * scale,
-        -Math.sin(angle) * scale,
-      );
-      setKnob(
-        Math.cos(angle) * clamped,
-        Math.sin(angle) * clamped,
-      );
+      const visual = len < DEADZONE ? { x: 0, y: -22 } : { x: dx, y: dy };
+      const vLen = Math.sqrt(visual.x * visual.x + visual.y * visual.y);
+      const clamped = Math.min(vLen, PAD_MAX);
+      if (vLen > 0.001) {
+        setKnob(
+          (visual.x / vLen) * clamped,
+          (visual.y / vLen) * clamped,
+        );
+      } else {
+        setKnob(0, -22);
+      }
     },
     [inputManager, setKnob],
   );
@@ -75,8 +106,12 @@ export function TouchControls({ inputManager }: TouchControlsProps) {
     <div className="pointer-events-none absolute inset-0 z-10 md:hidden">
       <div
         ref={padRef}
-        className="pointer-events-auto absolute bottom-6 left-4 touch-none select-none"
-        style={{ width: PAD_SIZE, height: PAD_SIZE }}
+        className="pointer-events-auto absolute left-3 touch-none select-none"
+        style={{
+          width: PAD_SIZE,
+          height: PAD_SIZE,
+          bottom: "max(1.25rem, env(safe-area-inset-bottom))",
+        }}
         onTouchStart={(e) => {
           e.preventDefault();
           const t = e.changedTouches[0];
@@ -98,32 +133,39 @@ export function TouchControls({ inputManager }: TouchControlsProps) {
         }}
         onTouchCancel={releasePad}
       >
-        <div className="relative h-full w-full rounded-full border border-white/20 bg-black/30 backdrop-blur-sm">
+        <div className="relative h-full w-full rounded-full border border-white/25 bg-black/35 shadow-[0_4px_24px_rgba(0,0,0,0.25)] backdrop-blur-sm">
+          <span className="absolute top-3 left-1/2 -translate-x-1/2 text-[11px] font-medium text-white/55">
+            ↑ Rema
+          </span>
+          <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] text-white/35">
+            ← Carve →
+          </span>
           <div
-            className="absolute top-1/2 left-1/2 h-12 w-12 rounded-full border border-white/30 bg-white/20 shadow-inner"
+            className="absolute top-1/2 left-1/2 h-14 w-14 rounded-full border border-white/35 bg-white/25 shadow-inner transition-transform duration-75"
             style={{
               transform: `translate(calc(-50% + ${knobRef.current.x}px), calc(-50% + ${knobRef.current.y}px))`,
             }}
           />
-          <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] tracking-wide text-white/50">
-            Carve
-          </span>
         </div>
       </div>
 
       <button
         type="button"
-        className={`pointer-events-auto absolute right-4 bottom-8 flex h-16 w-16 items-center justify-center rounded-full border bg-black/35 text-xs font-bold tracking-wider backdrop-blur-sm active:bg-white/20 ${
+        aria-label="Pop aéreo"
+        className={`pointer-events-auto absolute right-3 flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full border text-sm font-bold tracking-wider backdrop-blur-sm active:scale-95 ${
           popReady >= 0.98
-            ? "border-amber-300/50 text-amber-100 shadow-[0_0_14px_rgba(251,191,36,0.35)]"
-            : "border-white/25 text-white/70"
+            ? "border-amber-300/55 bg-amber-400/20 text-amber-50 shadow-[0_0_18px_rgba(251,191,36,0.4)]"
+            : "border-white/25 bg-black/40 text-white/75"
         }`}
+        style={{ bottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
         onTouchStart={(e) => e.preventDefault()}
         onTouchEnd={(e) => {
           e.preventDefault();
-          inputManager.requestPop();
+          if (popReady >= 0.98) inputManager.requestPop();
         }}
-        onClick={() => inputManager.requestPop()}
+        onClick={() => {
+          if (popReady >= 0.98) inputManager.requestPop();
+        }}
       >
         <span
           className="absolute inset-0 rounded-full border-2 border-amber-300/60"

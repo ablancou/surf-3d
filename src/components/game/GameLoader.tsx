@@ -1,13 +1,35 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Component, useEffect, type ReactNode } from "react";
+import { Component, useEffect, useState, type ReactNode } from "react";
 
-function RapierPreload() {
+function RapierGate({ children }: { children: ReactNode }) {
+  const [ready, setReady] = useState(false);
+
   useEffect(() => {
-    void import("@dimforge/rapier3d-compat").then((rapier) => rapier.init());
+    let cancelled = false;
+    void import("@dimforge/rapier3d-compat")
+      .then((rapier) => rapier.init())
+      .then(() => {
+        if (!cancelled) setReady(true);
+      })
+      .catch(() => {
+        if (!cancelled) setReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
-  return null;
+
+  if (!ready) {
+    return (
+      <div className="flex h-dvh w-full items-center justify-center bg-sky-300 text-slate-900">
+        Loading surf...
+      </div>
+    );
+  }
+
+  return children;
 }
 
 const Game = dynamic(
@@ -74,8 +96,9 @@ class GameErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundary
 export function GameLoader() {
   return (
     <GameErrorBoundary>
-      <RapierPreload />
-      <Game />
+      <RapierGate>
+        <Game />
+      </RapierGate>
     </GameErrorBoundary>
   );
 }

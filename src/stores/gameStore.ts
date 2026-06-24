@@ -4,7 +4,7 @@ import type { WipeoutReason } from "@/lib/tricks/types";
 
 export type TrickPopup = TrickEvent & { id_key: string };
 
-export const COMBO_WINDOW_SEC = 4.8;
+export const COMBO_WINDOW_SEC = 6.5;
 
 type GameStore = {
   speed: number;
@@ -121,13 +121,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }),
 
   triggerWipeout: (reason) =>
-    set({
-      wipedOut: true,
-      wipeoutReason: reason,
-      combo: 0,
-      multiplier: 1,
-      comboExpiresAt: 0,
-      cameraShake: 1,
+    set((s) => {
+      const keptCombo = Math.max(0, Math.floor(s.combo * 0.5));
+      return {
+        wipedOut: true,
+        wipeoutReason: reason,
+        combo: keptCombo,
+        multiplier: 1 + keptCombo * 0.18,
+        comboExpiresAt: keptCombo > 0 ? s.comboExpiresAt : 0,
+        cameraShake: 0.55,
+      };
     }),
 
   clearWipeout: () => set({ wipedOut: false, wipeoutReason: null }),

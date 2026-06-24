@@ -76,8 +76,10 @@ export class OceanSimulator {
   sampleHeight(x: number, z: number): number {
     const n = this.size;
     const half = this.length * 0.5;
-    const u = ((x + half) / this.length) * n;
-    const v = ((z + half) / this.length) * n;
+    const wx = ((x + half) % this.length + this.length) % this.length;
+    const wz = ((z + half) % this.length + this.length) % this.length;
+    const u = (wx / this.length) * n;
+    const v = (wz / this.length) * n;
 
     const x0 = Math.floor(u) % n;
     const y0 = Math.floor(v) % n;

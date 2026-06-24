@@ -97,7 +97,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
 
     if (!spawned.current) {
       respawnAtBest(body);
-      spawnGrace.current = 2.8;
+      spawnGrace.current = 4.5;
       wasInTube.current = false;
       spawned.current = true;
       triggerDropBanner(gameClock.time);
@@ -113,10 +113,10 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
         void finalizeRun(replayRecorder.current);
       }
       wipeoutTimer.current += dt;
-      if (wipeoutTimer.current > 1.35) {
+      if (wipeoutTimer.current > 0.85) {
         const pos = body.translation();
         respawn(body, pos.x, pos.z);
-        spawnGrace.current = 2.2;
+        spawnGrace.current = 4;
         wasInTube.current = false;
         wipeoutTimer.current = 0;
         clearWipeout();
@@ -196,9 +196,9 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
 
     setTubeState(telemetry.inTube, telemetry.tubeDepth);
 
-    if (result.submerged && result.speed > 1.5) {
+    if (result.submerged && result.speed > 1.2) {
       const tubeTune = getSpotTube();
-      const rideRate = telemetry.inTube ? tubeTune.rideScoreMultiplier : 2.4;
+      const rideRate = telemetry.inTube ? tubeTune.rideScoreMultiplier : 3.2;
       addRideScore(result.speed * dt * rideRate);
     }
 
@@ -356,8 +356,8 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
       type="dynamic"
       colliders={false}
       mass={7}
-      linearDamping={0.08}
-      angularDamping={0.75}
+      linearDamping={0.06}
+      angularDamping={0.62}
       canSleep={false}
       enabledRotations={[true, true, true]}
     >

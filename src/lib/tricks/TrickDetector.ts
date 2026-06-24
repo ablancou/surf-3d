@@ -88,8 +88,8 @@ export class TrickDetector {
       return null;
     }
 
-    const carvingLeft = t.tiltX < -0.22 && Math.abs(t.angularVelocityZ) > 0.45 && t.leanX < -0.12;
-    const carvingRight = t.tiltX > 0.22 && Math.abs(t.angularVelocityZ) > 0.45 && t.leanX > 0.12;
+    const carvingLeft = t.tiltX < -0.16 && Math.abs(t.angularVelocityZ) > 0.32 && t.leanX < -0.08;
+    const carvingRight = t.tiltX > 0.16 && Math.abs(t.angularVelocityZ) > 0.32 && t.leanX > 0.08;
 
     if (carvingLeft) {
       this.carveState = "left";
@@ -127,8 +127,8 @@ export class TrickDetector {
     const uphill = recent.filter((s) => s.downhillSpeed < -0.5).length >= 4;
     const accel = recent.slice(-4).every((s, i, arr) => i === 0 || s.speed >= arr[i - 1].speed - 0.2);
 
-    if (speedGain > 1.4 && uphill && accel && t.speed > 3.5) {
-      return this.emit("pumping", time, 0.9);
+    if (speedGain > 0.9 && uphill && accel && t.speed > 2.8) {
+      return this.emit("pumping", time, 0.75);
     }
     return null;
   }
@@ -204,10 +204,10 @@ export class TrickDetector {
   private detectAerial(t: RiderTelemetry, time: number): TrickEvent | null {
     if (!this.canTrigger("aerial")) return null;
 
-    if (t.submerged && this.peakAirHeight > 0.55 && t.airTime < 0.08) {
+    if (t.submerged && this.peakAirHeight > 0.38 && t.airTime < 0.1) {
       const peak = this.peakAirHeight;
       this.peakAirHeight = 0;
-      if (peak > 0.55) {
+      if (peak > 0.38) {
         const bonus = Math.floor(peak * 200);
         return this.emit("aerial", time, 1.6, TRICK_POINTS.aerial + bonus);
       }
