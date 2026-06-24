@@ -8,10 +8,12 @@ export type InputProfile = {
 
 export function isCoarsePointer(): boolean {
   if (typeof window === "undefined") return false;
-  return (
-    window.matchMedia("(pointer: coarse)").matches ||
-    /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
-  );
+  const narrow = window.innerWidth < 768;
+  const coarse = window.matchMedia("(pointer: coarse)").matches;
+  const touch =
+    navigator.maxTouchPoints > 0 ||
+    /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  return coarse || (narrow && touch);
 }
 
 export function getInputProfile(): InputProfile {

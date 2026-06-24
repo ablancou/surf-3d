@@ -9,20 +9,20 @@ export default defineConfig({
   reporter: process.env.CI ? "github" : "list",
   timeout: 60_000,
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000",
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3010",
     trace: "on-first-retry",
   },
   webServer: process.env.CI
     ? {
-        command: "npm run start",
-        url: "http://127.0.0.1:3000",
+        command: "PORT=3010 npm run start",
+        url: "http://127.0.0.1:3010",
         reuseExistingServer: false,
         timeout: 120_000,
       }
     : {
-        command: "npm run start",
-        url: "http://127.0.0.1:3000",
-        reuseExistingServer: true,
+        command: "PORT=3010 npm run start",
+        url: "http://127.0.0.1:3010",
+        reuseExistingServer: !process.env.PLAYWRIGHT_NO_REUSE,
         timeout: 120_000,
       },
   projects: [

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { TrickEvent } from "@/lib/tricks/types";
 import type { WipeoutReason } from "@/lib/tricks/types";
+import type { RidePhase, RideRecap } from "@/lib/game/rideSession";
 import {
   COMBO_WINDOW_SEC,
   comboMultiplier,
@@ -13,6 +14,9 @@ export type TrickPopup = TrickEvent & { id_key: string };
 export { COMBO_WINDOW_SEC };
 
 type GameStore = {
+  ridePhase: RidePhase;
+  rideRecap: RideRecap | null;
+  rideStartTime: number;
   speed: number;
   score: number;
   combo: number;
@@ -33,6 +37,9 @@ type GameStore = {
   setAirTime: (airTime: number) => void;
   setRiding: (riding: boolean) => void;
   resetRide: () => void;
+  startNewRide: (now: number) => void;
+  endRideWithRecap: (recap: RideRecap) => void;
+  setRidePhase: (phase: RidePhase) => void;
   setTubeState: (inTube: boolean, tubeDepth: number) => void;
   addTubeScore: (points: number) => void;
   addRideScore: (points: number) => void;
@@ -50,6 +57,9 @@ type GameStore = {
 let popupCounter = 0;
 
 export const useGameStore = create<GameStore>((set, get) => ({
+  ridePhase: "paddling",
+  rideRecap: null,
+  rideStartTime: 0,
   speed: 0,
   score: 0,
   combo: 0,
@@ -70,8 +80,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setPopReady: (popReady) => set({ popReady }),
   setAirTime: (airTime) => set({ airTime }),
   setRiding: (riding) => set({ riding }),
-  resetRide: () =>
+  resetRide: () => get().startNewRide(0),
+
+  startNewRide: (now) =>
     set({
+      ridePhase: "paddling",
+      rideRecap: null,
+      rideStartTime: now,
       speed: 0,
       score: 0,
       combo: 0,
@@ -88,6 +103,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
       dropBannerUntil: 0,
       trickPopups: [],
     }),
+
+  endRideWithRecap: (recap) =>
+    set({
+      rideRecap: recap,
+      ridePhase: "recap",
+      wipedOut: true,
+      wipeoutReason: recap.reason === "fall" ? null : recap.reason,
+      combo: 0,
+      multiplier: 1,
+      comboExpiresAt: 0,
+      cameraShake: 0.55,
+    }),
+
+  setRidePhase: (ridePhase) => set({ ridePhase }),
   setTubeState: (inTube, tubeDepth) => set({ inTube, tubeDepth }),
   addTubeScore: (points) => {
     if (get().wipedOut || points <= 0) return;

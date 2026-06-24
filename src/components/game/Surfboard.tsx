@@ -29,7 +29,16 @@ import {
 } from "@/lib/physics/surfboardForces";
 import { WipeoutDetector } from "@/lib/physics/wipeout";
 import { getSpotTube } from "@/lib/spots/spotPhysics";
-import { findOptimalSpawn, findRespawnPoint } from "@/lib/waves/spawnSystem";
+import {
+  canCatchWave,
+  STAND_UP_BOOST,
+} from "@/lib/game/rideSession";
+import {
+  catchBoostForSpawn,
+  findOptimalSpawn,
+  findRespawnPoint,
+  type SpawnPoint,
+} from "@/lib/waves/spawnSystem";
 import { sampleOceanHeight } from "@/lib/waves/oceanSampler";
 import { TrickDetector } from "@/lib/tricks/TrickDetector";
 import { buildRiderTelemetry } from "@/lib/tricks/telemetry";
@@ -69,6 +78,9 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
   const runHandled = useRef(false);
   const spawnGrace = useRef(0);
   const wasInTube = useRef(false);
+  const paddleTimer = useRef(0);
+  const lastSpawn = useRef<SpawnPoint | null>(null);
+  const rideStart = useRef(0);
 
   const setSpeed = useGameStore((s) => s.setSpeed);
   const setAirTime = useGameStore((s) => s.setAirTime);
@@ -77,13 +89,16 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
   const addRideScore = useGameStore((s) => s.addRideScore);
   const addTubeScore = useGameStore((s) => s.addTubeScore);
   const registerTrick = useGameStore((s) => s.registerTrick);
-  const triggerWipeout = useGameStore((s) => s.triggerWipeout);
   const clearWipeout = useGameStore((s) => s.clearWipeout);
   const prunePopups = useGameStore((s) => s.prunePopups);
   const tickComboDecay = useGameStore((s) => s.tickComboDecay);
   const setPopReady = useGameStore((s) => s.setPopReady);
   const triggerDropBanner = useGameStore((s) => s.triggerDropBanner);
   const wipedOut = useGameStore((s) => s.wipedOut);
+  const ridePhase = useGameStore((s) => s.ridePhase);
+  const startNewRide = useGameStore((s) => s.startNewRide);
+  const endRideWithRecap = useGameStore((s) => s.endRideWithRecap);
+  const setRidePhase = useGameStore((s) => s.setRidePhase);
   const markTutorial = useTutorialStore((s) => s.markAction);
 
   useBeforePhysicsStep(() => {
@@ -96,11 +111,15 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
     boardRotation.set(rot.x, rot.y, rot.z, rot.w);
 
     if (!spawned.current) {
-      respawnAtBest(body);
+      const spawn = findOptimalSpawn(gameClock.time);
+      applyPaddleSpawn(body, spawn);
+      lastSpawn.current = spawn;
+      startNewRide(gameClock.time);
+      rideStart.current = gameClock.time;
       spawnGrace.current = 4.5;
+      paddleTimer.current = 0;
       wasInTube.current = false;
       spawned.current = true;
-      triggerDropBanner(gameClock.time);
       replayRecorder.current.start(gameClock.time);
       trickCountRef.current = 0;
       runHandled.current = false;
@@ -113,14 +132,18 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
         void finalizeRun(replayRecorder.current);
       }
       wipeoutTimer.current += dt;
-      if (wipeoutTimer.current > 0.85) {
-        const pos = body.translation();
-        respawn(body, pos.x, pos.z);
+      const recapDelay = useGameStore.getState().ridePhase === "recap" ? 2.4 : 0.85;
+      if (wipeoutTimer.current > recapDelay) {
+        const spawn = findRespawnPoint(body.translation().x, body.translation().z, gameClock.time);
+        applyPaddleSpawn(body, spawn);
+        lastSpawn.current = spawn;
+        startNewRide(gameClock.time);
+        rideStart.current = gameClock.time;
         spawnGrace.current = 4;
+        paddleTimer.current = 0;
         wasInTube.current = false;
         wipeoutTimer.current = 0;
         clearWipeout();
-        triggerDropBanner(gameClock.time);
         wipeoutDetector.current.resetCooldown();
         replayRecorder.current.start(gameClock.time);
         trickCountRef.current = 0;
@@ -149,11 +172,18 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
       const fellThrough = pos.y < waterY - 4 || pos.y < -8;
       const airTooLong = airTimeRef.current > 3.2 && pos.y < waterY + 1.5;
       if (fellThrough || airTooLong) {
-        respawn(body, pos.x, pos.z);
-        spawnGrace.current = 2.2;
+        const lb = useLeaderboardStore.getState();
+        endRideWithRecap({
+          score: useGameStore.getState().score,
+          trickCount: lb.trickCount,
+          maxCombo: lb.maxCombo,
+          maxSpeed: lb.maxSpeed,
+          reason: "fall",
+          durationSec: gameClock.time - rideStart.current,
+        });
+        wipeoutTimer.current = 0;
+        runHandled.current = false;
         airTimeRef.current = 0;
-        setSpeed(0);
-        setRiding(true);
         return;
       }
     } else {
@@ -186,6 +216,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
 
     boardVisualState.speed = telemetry.speed;
     boardVisualState.tiltX = telemetry.tiltX;
+    boardVisualState.paddling = ridePhase === "paddling";
     boardVisualState.inTube = telemetry.inTube;
     boardVisualState.airborne = !result.submerged;
     boardVisualState.airTime = airTimeRef.current;
@@ -196,7 +227,36 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
 
     setTubeState(telemetry.inTube, telemetry.tubeDepth);
 
-    if (result.submerged && result.speed > 1.2) {
+    if (ridePhase === "paddling") {
+      if (inputManager.state.leanZ > 0.12) {
+        paddleTimer.current += dt;
+      } else {
+        paddleTimer.current = Math.max(0, paddleTimer.current - dt * 0.5);
+      }
+      if (
+        canCatchWave(
+          result.speed,
+          telemetry.waveFaceAlignment,
+          inputManager.state.leanZ,
+          paddleTimer.current,
+        )
+      ) {
+        setRidePhase("riding");
+        triggerDropBanner(gameClock.time);
+        rideStart.current = gameClock.time;
+        const spawn = lastSpawn.current;
+        if (spawn) {
+          const boost = catchBoostForSpawn(spawn) + STAND_UP_BOOST;
+          body.applyImpulse(
+            { x: spawn.downhillX * boost, y: 0.45, z: spawn.downhillZ * boost },
+            true,
+          );
+        }
+        paddleTimer.current = 0;
+      }
+    }
+
+    if (ridePhase === "riding" && result.submerged && result.speed > 1.2) {
       const tubeTune = getSpotTube();
       const rideRate = telemetry.inTube ? tubeTune.rideScoreMultiplier : 3.2;
       addRideScore(result.speed * dt * rideRate);
@@ -228,7 +288,10 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
 
     tickComboDecay(gameClock.time);
 
-    const trick = trickDetector.current.update(telemetry, gameClock.time, dt);
+    const trick =
+      ridePhase === "riding"
+        ? trickDetector.current.update(telemetry, gameClock.time, dt)
+        : null;
     if (trick) {
       trickCountRef.current += 1;
       registerTrick(trick, gameClock.time);
@@ -248,11 +311,19 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
     spawnGrace.current = Math.max(0, spawnGrace.current - dt);
 
     const wipeout =
-      spawnGrace.current <= 0
+      ridePhase === "riding" && spawnGrace.current <= 0
         ? wipeoutDetector.current.update(telemetry, gameClock.time, dt)
         : null;
     if (wipeout) {
-      triggerWipeout(wipeout.reason);
+      const lb = useLeaderboardStore.getState();
+      endRideWithRecap({
+        score: useGameStore.getState().score,
+        trickCount: lb.trickCount,
+        maxCombo: lb.maxCombo,
+        maxSpeed: lb.maxSpeed,
+        reason: wipeout.reason,
+        durationSec: gameClock.time - rideStart.current,
+      });
       emitWipeoutSplash(particles, boardPosition, result.speed);
       audioEngine.playWipeout();
       hapticWipeout();
@@ -298,7 +369,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
       popCooldown.current <= 0 ? 1 : 1 - popCooldown.current / POP_COOLDOWN_SEC,
     );
 
-    if (popEdge && result.submerged && popCooldown.current <= 0) {
+    if (popEdge && ridePhase === "riding" && result.submerged && popCooldown.current <= 0) {
       const popPower = popImpulseForSpeed(result.speed);
       body.applyImpulse({ x: 0, y: popPower, z: 0 }, true);
       if (result.speed > 4) {
@@ -398,24 +469,13 @@ async function finalizeRun(recorder: ReplayRecorder) {
   }
 }
 
-function applySpawn(body: RapierRigidBody, spawn: ReturnType<typeof findOptimalSpawn>) {
-  const halfYaw = spawn.yaw * 0.5;
-  const sin = Math.sin(halfYaw);
-  const cos = Math.cos(halfYaw);
+function applyPaddleSpawn(body: RapierRigidBody, spawn: SpawnPoint) {
+  const q = new THREE.Quaternion().setFromEuler(
+    new THREE.Euler(0.38, spawn.yaw, 0, "YXZ"),
+  );
 
   body.setTranslation({ x: spawn.x, y: spawn.y, z: spawn.z }, true);
-  body.setRotation({ x: 0, y: sin, z: 0, w: cos }, true);
-  body.setLinvel(
-    { x: spawn.downhillX * spawn.boost, y: 0, z: spawn.downhillZ * spawn.boost },
-    true,
-  );
+  body.setRotation({ x: q.x, y: q.y, z: q.z, w: q.w }, true);
+  body.setLinvel({ x: 0, y: 0, z: 0 }, true);
   body.setAngvel({ x: 0, y: 0, z: 0 }, true);
-}
-
-function respawnAtBest(body: RapierRigidBody) {
-  applySpawn(body, findOptimalSpawn(gameClock.time));
-}
-
-function respawn(body: RapierRigidBody, x: number, z: number) {
-  applySpawn(body, findRespawnPoint(x, z, gameClock.time));
 }

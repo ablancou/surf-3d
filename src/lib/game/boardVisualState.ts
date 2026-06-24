@@ -4,6 +4,7 @@ import type { TrickId } from "@/lib/tricks/types";
 export const boardVisualState = {
   speed: 0,
   tiltX: 0,
+  paddling: true,
   inTube: false,
   airborne: false,
   airTime: 0,

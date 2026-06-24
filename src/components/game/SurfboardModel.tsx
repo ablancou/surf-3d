@@ -79,12 +79,12 @@ export function SurfboardModel() {
     const group = groupRef.current;
     if (!group) return;
 
-    const { speed, tiltX, inTube, airborne, airTime, verticalVelocity, flipUntil } =
+    const { speed, tiltX, paddling, inTube, airborne, airTime, verticalVelocity, flipUntil } =
       boardVisualState;
     const flex = Math.sin(gameClock.time * (6 + speed * 0.5)) * speed * 0.004;
     const carveBank = tiltX * 0.15;
 
-    let pitchX = 0;
+    let pitchX = paddling ? 0.42 : 0;
     if (flipUntil > gameClock.time) {
       const flipDur = 0.75;
       const progress = 1 - (flipUntil - gameClock.time) / flipDur;

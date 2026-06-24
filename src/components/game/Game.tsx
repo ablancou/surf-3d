@@ -21,6 +21,7 @@ import { SpeedStreaks } from "@/components/ui/SpeedStreaks";
 import { TrickPopups } from "@/components/ui/TrickPopups";
 import { TutorialOverlay } from "@/components/ui/TutorialOverlay";
 import { TubeOverlay } from "@/components/ui/TubeOverlay";
+import { RideRecapOverlay } from "@/components/ui/RideRecapOverlay";
 import { WipeoutOverlay } from "@/components/ui/WipeoutOverlay";
 import { audioEngine } from "@/lib/audio/AudioEngine";
 import { InputManager } from "@/lib/input/InputManager";
@@ -108,6 +109,7 @@ export function Game() {
       <AerialOverlay />
       <TubeOverlay />
       <WipeoutOverlay />
+      <RideRecapOverlay />
       <ControlsOverlay />
       {inputManagerRef.current && <TouchControls inputManager={inputManagerRef.current} />}
     </div>

@@ -5,6 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 
+import { BarrelZone } from "@/components/game/BarrelZone";
 import { CameraRig } from "@/components/game/CameraRig";
 import { Effects } from "@/components/game/Effects";
 import { OceanSystem } from "@/components/game/OceanSystem";
@@ -62,6 +63,7 @@ export function GameScene({ inputManager }: GameSceneProps) {
         targetPosition={boardPosition.current}
         targetRotation={boardRotation.current}
       />
+      <BarrelZone />
       <SprayParticles ref={particlesRef} />
       <RemoteSurfers />
       <ReplayGhosts />

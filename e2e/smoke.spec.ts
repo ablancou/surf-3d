@@ -21,11 +21,11 @@ test("loads game canvas and accelerates when holding W", async ({ page }) => {
   expect(speedBefore).toBeGreaterThanOrEqual(0);
 
   await page.keyboard.down("w");
-  await page.waitForTimeout(3500);
+  await page.waitForTimeout(5500);
   await page.keyboard.up("w");
 
   const speedAfter = await readSpeed(page);
-  expect(speedAfter).toBeGreaterThan(3);
+  expect(speedAfter).toBeGreaterThan(2.5);
 
   await expect(page.locator("p.text-white\\/60").filter({ hasText: /Surfeando|Tubo|Aéreo/ })).toBeVisible();
 });

@@ -42,15 +42,40 @@ test("production surf session: canvas, input, score", async ({ page }) => {
   expect(errors.filter((e) => !e.includes("favicon"))).toEqual([]);
 });
 
-test("mobile portrait viewport", async ({ page }) => {
-  await page.setViewportSize({ width: 375, height: 667 });
+test("mobile portrait viewport with touch pad", async ({ browser }) => {
+  const context = await browser.newContext({
+    viewport: { width: 375, height: 667 },
+    hasTouch: true,
+    isMobile: true,
+  });
+  const page = await context.newPage();
+  await page.addInitScript(() => {
+    localStorage.setItem("surf3d-tutorial-done", "1");
+    Object.defineProperty(navigator, "maxTouchPoints", { value: 5, configurable: true });
+  });
   await page.goto("/");
   await expect(page.getByText("Loading surf...")).toBeHidden({ timeout: 45_000 });
   await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.getByText("↑ Rema")).toBeVisible({ timeout: 10_000 });
+
+  const pad = page.locator("div").filter({ hasText: "↑ Rema" }).first();
+  const box = await pad.boundingBox();
+  expect(box).toBeTruthy();
+  if (box) {
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
+    await page.touchscreen.tap(cx, cy);
+    await page.waitForTimeout(4000);
+  }
+
+  const speed = await readSpeed(page);
+  expect(speed).toBeGreaterThan(1);
+
   await page.screenshot({
     path: path.join(SCRATCH, "surf-mobile-portrait.png"),
     fullPage: true,
   });
+  await context.close();
 });
 
 async function readSpeed(page: import("@playwright/test").Page): Promise<number> {

@@ -45,8 +45,7 @@ function buildSpawn(x: number, z: number, time: number, quality: number, boost: 
 export function findOptimalSpawn(time: number): SpawnPoint {
   const spot = getActiveSpot();
   const { zMin, zMax, xRange } = spot.spawn;
-  const boostMul = spot.physics.spawnBoost;
-  let best: SpawnPoint = buildSpawn(0, zMin, time, 0, 8 * boostMul);
+  let best: SpawnPoint = buildSpawn(0, zMin, time, 0, 0);
 
   for (let z = zMin; z <= zMax; z += 2) {
     for (let x = -xRange; x <= xRange; x += 2) {
@@ -59,8 +58,7 @@ export function findOptimalSpawn(time: number): SpawnPoint {
       const faceQuality = slope * 2 + faceDrop * 0.8 + center.normal.y * 0.3;
 
       if (faceQuality > best.quality) {
-        const boost = (9 + Math.min(slope * 3.5, 4)) * boostMul;
-        best = buildSpawn(x, z, time, faceQuality, boost);
+        best = buildSpawn(x, z, time, faceQuality, 0);
       }
     }
   }
@@ -74,6 +72,11 @@ export function findRespawnPoint(x: number, z: number, time: number): SpawnPoint
   if (dist < 30) return local;
 
   const sample = sampleOcean(x, z, time);
+  return buildSpawn(x, z, time, sample.steepness, 0);
+}
+
+/** Boost applied on stand-up / wave catch (not at spawn). */
+export function catchBoostForSpawn(spawn: SpawnPoint): number {
   const boostMul = getActiveSpot().physics.spawnBoost;
-  return buildSpawn(x, z, time, sample.steepness, (4 + sample.steepness * 2) * boostMul);
+  return (6 + spawn.quality * 0.8) * boostMul;
 }
