@@ -11,7 +11,9 @@ export function RideRecapOverlay() {
   return (
     <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-sky-950/40 backdrop-blur-sm">
       <div className="mx-4 w-full max-w-sm rounded-2xl border border-white/20 bg-black/55 px-6 py-5 text-center backdrop-blur-md">
-        <p className="text-xs uppercase tracking-[0.25em] text-white/50">Fin del ride</p>
+        <p className="text-xs uppercase tracking-[0.25em] text-white/50">
+          {recap.reason === "completed" ? "¡Ride completado!" : "Fin del ride"}
+        </p>
         <p className="mt-2 font-mono text-4xl font-bold text-white">{recap.score}</p>
         <p className="text-sm text-white/60">puntos</p>
         <div className="mt-4 grid grid-cols-3 gap-2 font-mono text-xs text-white/75">

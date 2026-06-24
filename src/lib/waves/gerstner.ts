@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { sampleBreakingWave } from "@/lib/waves/breakingWave";
+import { breakingVertexDeform, sampleBreakingWave } from "@/lib/waves/breakingWave";
 import type { GerstnerWave } from "./waveConfig";
 
 export type WaveSample = {
@@ -72,8 +72,13 @@ export function sampleGerstnerWaves(
 
   scratch.normal.set(ty * bz - tz * by, tx * bz - tz * bx, tx * by - ty * bx).normalize();
 
-  let slope = Math.sqrt(dHdX * dHdX + dHdZ * dHdZ);
   const breaking = sampleBreakingWave(x, z, time, waves);
+  const lip = breakingVertexDeform(x, z, time, waves);
+  height += lip.dy;
+  scratch.displacement.x += lip.dx;
+  scratch.displacement.z += lip.dz;
+
+  let slope = Math.sqrt(dHdX * dHdX + dHdZ * dHdZ);
   slope *= 0.65 + breaking.curl * 0.55 + breaking.peelPhase * 0.2;
 
   if (out) {

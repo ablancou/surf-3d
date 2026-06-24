@@ -8,6 +8,7 @@ const SCRATCH =
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem("surf3d-tutorial-done", "1");
+    localStorage.setItem("surf3d-auto-start", "1");
     Object.defineProperty(navigator, "deviceMemory", { value: 4, configurable: true });
   });
 });
@@ -21,6 +22,7 @@ test("production surf session: canvas, input, score", async ({ page }) => {
 
   await page.goto("/");
   await expect(page.getByText("Loading surf...")).toBeHidden({ timeout: 45_000 });
+  await page.locator('[data-testid="hud-speed"]').waitFor({ state: "visible", timeout: 20_000 });
 
   const canvas = page.locator("canvas");
   await expect(canvas).toBeVisible();
@@ -51,6 +53,7 @@ test("mobile portrait viewport with touch pad", async ({ browser }) => {
   const page = await context.newPage();
   await page.addInitScript(() => {
     localStorage.setItem("surf3d-tutorial-done", "1");
+    localStorage.setItem("surf3d-auto-start", "1");
     Object.defineProperty(navigator, "maxTouchPoints", { value: 5, configurable: true });
   });
   await page.goto("/");
@@ -79,6 +82,6 @@ test("mobile portrait viewport with touch pad", async ({ browser }) => {
 });
 
 async function readSpeed(page: import("@playwright/test").Page): Promise<number> {
-  const text = await page.locator(".font-mono.text-2xl.font-semibold").first().textContent();
+  const text = await page.locator('[data-testid="hud-speed"]').textContent();
   return parseFloat(text?.trim() ?? "0") || 0;
 }

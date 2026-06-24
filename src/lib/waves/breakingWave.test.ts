@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sampleBreakingWave } from "@/lib/waves/breakingWave";
+import { breakingVertexDeform, sampleBreakingWave } from "@/lib/waves/breakingWave";
 import { SURF_WAVES } from "@/lib/waves/waveConfig";
 
 describe("sampleBreakingWave", () => {
@@ -24,5 +24,17 @@ describe("sampleBreakingWave", () => {
       }
     }
     expect(foundBreaking).toBe(true);
+  });
+
+  it("deforms vertices with lip lift and forward throw", () => {
+    let maxDy = 0;
+    for (let t = 0; t < 40; t += 0.5) {
+      const d = breakingVertexDeform(0, -12, t, SURF_WAVES);
+      maxDy = Math.max(maxDy, d.dy);
+      if (d.dy > 0.05) {
+        expect(Math.hypot(d.dx, d.dz)).toBeGreaterThan(0);
+      }
+    }
+    expect(maxDy).toBeGreaterThan(0.08);
   });
 });

@@ -37,6 +37,7 @@ type GameStore = {
   setAirTime: (airTime: number) => void;
   setRiding: (riding: boolean) => void;
   resetRide: () => void;
+  beginSession: (now: number) => void;
   startNewRide: (now: number) => void;
   endRideWithRecap: (recap: RideRecap) => void;
   setRidePhase: (phase: RidePhase) => void;
@@ -57,7 +58,7 @@ type GameStore = {
 let popupCounter = 0;
 
 export const useGameStore = create<GameStore>((set, get) => ({
-  ridePhase: "paddling",
+  ridePhase: "menu",
   rideRecap: null,
   rideStartTime: 0,
   speed: 0,
@@ -81,6 +82,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setAirTime: (airTime) => set({ airTime }),
   setRiding: (riding) => set({ riding }),
   resetRide: () => get().startNewRide(0),
+
+  beginSession: (now) => get().startNewRide(now),
 
   startNewRide: (now) =>
     set({
@@ -108,12 +111,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({
       rideRecap: recap,
       ridePhase: "recap",
-      wipedOut: true,
-      wipeoutReason: recap.reason === "fall" ? null : recap.reason,
-      combo: 0,
-      multiplier: 1,
-      comboExpiresAt: 0,
-      cameraShake: 0.55,
+      wipedOut: recap.reason !== "completed",
+      wipeoutReason:
+        recap.reason === "completed" || recap.reason === "fall" ? null : recap.reason,
+      combo: recap.reason === "completed" ? get().combo : 0,
+      multiplier: recap.reason === "completed" ? get().multiplier : 1,
+      comboExpiresAt: recap.reason === "completed" ? get().comboExpiresAt : 0,
+      cameraShake: recap.reason === "completed" ? 0.22 : 0.55,
     }),
 
   setRidePhase: (ridePhase) => set({ ridePhase }),

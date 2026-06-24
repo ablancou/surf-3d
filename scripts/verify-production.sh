@@ -2,7 +2,7 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SCRATCH="${GOAL_SCRATCH:-/var/folders/r1/bcp2p7hj5vs3nljwnbnv6h6m0000gn/T/grok-goal-ff522b85b1ba/implementer}"
-PORT="${VERIFY_PORT:-3000}"
+PORT="${VERIFY_PORT:-3010}"
 RUN_LABEL="${1:-run1}"
 
 cd "$ROOT"

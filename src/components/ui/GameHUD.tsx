@@ -111,6 +111,7 @@ export function GameHUD({ rendererKind, oceanMode, perfTier }: GameHUDProps) {
         >
           <p className="text-xs uppercase tracking-[0.2em] text-white/70">Velocidad</p>
           <p
+            data-testid="hud-speed"
             className={`font-mono text-2xl font-semibold tabular-nums ${
               nearMaxSpeed ? "text-orange-200" : "text-white"
             }`}

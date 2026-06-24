@@ -29,9 +29,12 @@ import {
 } from "@/lib/physics/surfboardForces";
 import { WipeoutDetector } from "@/lib/physics/wipeout";
 import { getSpotTube } from "@/lib/spots/spotPhysics";
+import type { RideRecap } from "@/lib/game/rideSession";
 import {
   canCatchWave,
+  shouldCompleteRide,
   STAND_UP_BOOST,
+  WIPE_TO_RECAP_SEC,
 } from "@/lib/game/rideSession";
 import {
   catchBoostForSpawn,
@@ -81,6 +84,9 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
   const paddleTimer = useRef(0);
   const lastSpawn = useRef<SpawnPoint | null>(null);
   const rideStart = useRef(0);
+  const peakSpeed = useRef(0);
+  const slowTimer = useRef(0);
+  const recapPending = useRef<RideRecap | null>(null);
 
   const setSpeed = useGameStore((s) => s.setSpeed);
   const setAirTime = useGameStore((s) => s.setAirTime);
@@ -94,6 +100,7 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
   const tickComboDecay = useGameStore((s) => s.tickComboDecay);
   const setPopReady = useGameStore((s) => s.setPopReady);
   const triggerDropBanner = useGameStore((s) => s.triggerDropBanner);
+  const triggerWipeout = useGameStore((s) => s.triggerWipeout);
   const wipedOut = useGameStore((s) => s.wipedOut);
   const ridePhase = useGameStore((s) => s.ridePhase);
   const startNewRide = useGameStore((s) => s.startNewRide);
@@ -110,15 +117,20 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
     const rot = body.rotation();
     boardRotation.set(rot.x, rot.y, rot.z, rot.w);
 
+    const phase = useGameStore.getState().ridePhase;
+    if (phase === "menu") return;
+
     if (!spawned.current) {
       const spawn = findOptimalSpawn(gameClock.time);
       applyPaddleSpawn(body, spawn);
       lastSpawn.current = spawn;
-      startNewRide(gameClock.time);
       rideStart.current = gameClock.time;
       spawnGrace.current = 4.5;
       paddleTimer.current = 0;
       wasInTube.current = false;
+      peakSpeed.current = 0;
+      slowTimer.current = 0;
+      recapPending.current = null;
       spawned.current = true;
       replayRecorder.current.start(gameClock.time);
       trickCountRef.current = 0;
@@ -126,14 +138,23 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
       useLeaderboardStore.getState().resetSession();
     }
 
-    if (wipedOut) {
+    if (phase === "wiped") {
+      wipeoutTimer.current += dt;
+      if (recapPending.current && wipeoutTimer.current >= WIPE_TO_RECAP_SEC) {
+        endRideWithRecap(recapPending.current);
+        recapPending.current = null;
+        wipeoutTimer.current = 0;
+      }
+      return;
+    }
+
+    if (phase === "recap") {
       if (!runHandled.current) {
         runHandled.current = true;
         void finalizeRun(replayRecorder.current);
       }
       wipeoutTimer.current += dt;
-      const recapDelay = useGameStore.getState().ridePhase === "recap" ? 2.4 : 0.85;
-      if (wipeoutTimer.current > recapDelay) {
+      if (wipeoutTimer.current > 2.4) {
         const spawn = findRespawnPoint(body.translation().x, body.translation().z, gameClock.time);
         applyPaddleSpawn(body, spawn);
         lastSpawn.current = spawn;
@@ -142,6 +163,9 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
         spawnGrace.current = 4;
         paddleTimer.current = 0;
         wasInTube.current = false;
+        peakSpeed.current = 0;
+        slowTimer.current = 0;
+        recapPending.current = null;
         wipeoutTimer.current = 0;
         clearWipeout();
         wipeoutDetector.current.resetCooldown();
@@ -173,14 +197,16 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
       const airTooLong = airTimeRef.current > 3.2 && pos.y < waterY + 1.5;
       if (fellThrough || airTooLong) {
         const lb = useLeaderboardStore.getState();
-        endRideWithRecap({
+        recapPending.current = {
           score: useGameStore.getState().score,
           trickCount: lb.trickCount,
           maxCombo: lb.maxCombo,
           maxSpeed: lb.maxSpeed,
           reason: "fall",
           durationSec: gameClock.time - rideStart.current,
-        });
+        };
+        setRidePhase("wiped");
+        triggerWipeout("bail");
         wipeoutTimer.current = 0;
         runHandled.current = false;
         airTimeRef.current = 0;
@@ -256,6 +282,42 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
       }
     }
 
+    if (ridePhase === "riding") {
+      peakSpeed.current = Math.max(peakSpeed.current, result.speed);
+      if (
+        result.speed < 1.6 ||
+        telemetry.waveFaceAlignment < 0.15
+      ) {
+        slowTimer.current += dt;
+      } else {
+        slowTimer.current = Math.max(0, slowTimer.current - dt * 0.45);
+      }
+
+      if (
+        shouldCompleteRide({
+          phase: ridePhase,
+          speed: result.speed,
+          faceAlignment: telemetry.waveFaceAlignment,
+          rideSec: gameClock.time - rideStart.current,
+          peakSpeed: peakSpeed.current,
+          slowSec: slowTimer.current,
+        })
+      ) {
+        const lb = useLeaderboardStore.getState();
+        endRideWithRecap({
+          score: useGameStore.getState().score,
+          trickCount: lb.trickCount,
+          maxCombo: lb.maxCombo,
+          maxSpeed: lb.maxSpeed,
+          reason: "completed",
+          durationSec: gameClock.time - rideStart.current,
+        });
+        wipeoutTimer.current = 0;
+        runHandled.current = false;
+        return;
+      }
+    }
+
     if (ridePhase === "riding" && result.submerged && result.speed > 1.2) {
       const tubeTune = getSpotTube();
       const rideRate = telemetry.inTube ? tubeTune.rideScoreMultiplier : 3.2;
@@ -316,14 +378,17 @@ export function Surfboard({ inputManager, particlesRef, onTransform }: Surfboard
         : null;
     if (wipeout) {
       const lb = useLeaderboardStore.getState();
-      endRideWithRecap({
+      recapPending.current = {
         score: useGameStore.getState().score,
         trickCount: lb.trickCount,
         maxCombo: lb.maxCombo,
         maxSpeed: lb.maxSpeed,
         reason: wipeout.reason,
         durationSec: gameClock.time - rideStart.current,
-      });
+      };
+      setRidePhase("wiped");
+      triggerWipeout(wipeout.reason);
+      wipeoutTimer.current = 0;
       emitWipeoutSplash(particles, boardPosition, result.speed);
       audioEngine.playWipeout();
       hapticWipeout();

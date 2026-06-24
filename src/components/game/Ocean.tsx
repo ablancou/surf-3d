@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { boardVisualState } from "@/lib/game/boardVisualState";
 import { gameClock } from "@/lib/game/clock";
+import { breakingVertexDeform } from "@/lib/waves/breakingWave";
 import { sampleGerstnerWaves } from "@/lib/waves/gerstner";
 import { OCEAN_SIZE } from "@/lib/waves/waveConfig";
 import { bindOceanSimulator, setOceanMode } from "@/lib/waves/oceanSampler";
@@ -67,7 +68,10 @@ export function Ocean() {
       const wx = lx + bx;
       const wz = -ly + bz;
       const sample = sampleGerstnerWaves(wx, wz, time, waves);
-      pos.setZ(i, sample.height);
+      const lip = breakingVertexDeform(wx, wz, time, waves);
+      pos.setX(i, lx + lip.dx);
+      pos.setY(i, ly - lip.dz);
+      pos.setZ(i, sample.height + lip.dy * 0.15);
     }
 
     pos.needsUpdate = true;

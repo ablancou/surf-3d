@@ -22,9 +22,11 @@ import { TrickPopups } from "@/components/ui/TrickPopups";
 import { TutorialOverlay } from "@/components/ui/TutorialOverlay";
 import { TubeOverlay } from "@/components/ui/TubeOverlay";
 import { RideRecapOverlay } from "@/components/ui/RideRecapOverlay";
+import { StartMenuOverlay } from "@/components/ui/StartMenuOverlay";
 import { WipeoutOverlay } from "@/components/ui/WipeoutOverlay";
 import { audioEngine } from "@/lib/audio/AudioEngine";
 import { InputManager } from "@/lib/input/InputManager";
+import { useGameStore } from "@/stores/gameStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 export function Game() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -42,6 +44,12 @@ export function Game() {
 
   useEffect(() => {
     initPerf();
+    if (typeof window !== "undefined" && localStorage.getItem("surf3d-auto-start") === "1") {
+      const { beginSession } = useGameStore.getState();
+      if (useGameStore.getState().ridePhase === "menu") {
+        beginSession(0);
+      }
+    }
   }, [initPerf]);
 
   const unlockAudio = useCallback(() => {
@@ -110,6 +118,7 @@ export function Game() {
       <TubeOverlay />
       <WipeoutOverlay />
       <RideRecapOverlay />
+      <StartMenuOverlay />
       <ControlsOverlay />
       {inputManagerRef.current && <TouchControls inputManager={inputManagerRef.current} />}
     </div>

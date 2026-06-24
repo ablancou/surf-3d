@@ -75,3 +75,35 @@ export function sampleLipOverhang(
 function primaryAmp(waves: readonly GerstnerWave[]) {
   return waves[0]?.amplitude ?? 1;
 }
+
+export type BreakingVertexDeform = {
+  /** Vertical lip lift */
+  dy: number;
+  /** Horizontal throw along peel (world X) */
+  dx: number;
+  /** Horizontal throw along peel (world Z) */
+  dz: number;
+};
+
+/**
+ * Peeling lip geometry — height + forward throw for ocean mesh and Gerstner height.
+ */
+export function breakingVertexDeform(
+  x: number,
+  z: number,
+  time: number,
+  waves: readonly GerstnerWave[],
+): BreakingVertexDeform {
+  const br = sampleBreakingWave(x, z, time, waves);
+  const amp = primaryAmp(waves);
+  const peelLift = br.curl * amp * Math.max(0, br.peelPhase - 0.3) * 0.55;
+  const lipThrow =
+    br.curl * amp * 0.28 * Math.max(0, Math.sin((br.peelPhase - 0.42) * Math.PI));
+  const dirX = Math.cos(br.peelDirection);
+  const dirZ = Math.sin(br.peelDirection);
+  return {
+    dy: peelLift,
+    dx: dirX * lipThrow,
+    dz: dirZ * lipThrow,
+  };
+}

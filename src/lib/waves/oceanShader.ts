@@ -51,6 +51,20 @@ void main() {
     p = gerstner(p, uWaveA[i], uWaveB[i], foam, tangent, binormal);
   }
 
+  vec4 w0a = uWaveA[0];
+  vec4 w0b = uWaveB[0];
+  float k0 = 6.28318530718 / w0a.y;
+  float phase0 = k0 * (w0b.x * p.x + w0b.y * p.z) - w0a.z * uTime;
+  float sinP0 = sin(phase0);
+  float peelPhase = (sinP0 + 1.0) * 0.5;
+  float curl = clamp(max(0.0, sinP0 - 0.25) * w0a.w * 1.35, 0.0, 1.0);
+  float peelLift = curl * w0a.x * max(0.0, peelPhase - 0.3) * 0.55;
+  float lipThrow = curl * w0a.x * 0.28 * max(0.0, sin((peelPhase - 0.42) * 3.14159));
+  p.y += peelLift;
+  p.x += w0b.x * lipThrow;
+  p.z += w0b.y * lipThrow;
+  foam = max(foam, curl * peelPhase);
+
   vec3 N = normalize(cross(binormal, tangent));
 
   vec4 world = modelMatrix * vec4(p, 1.0);
