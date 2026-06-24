@@ -147,6 +147,10 @@ export class AudioEngine {
       case "cutback":
         this.playSwoosh(0.7 * boost, true);
         break;
+      case "snap":
+        this.playSwoosh(0.65 * boost, true);
+        this.playTone(200, 0.08, 0.05 * boost);
+        break;
       case "floater":
         this.playSplash(0.45 * boost);
         this.playTone(320, 0.1, 0.04 * boost);

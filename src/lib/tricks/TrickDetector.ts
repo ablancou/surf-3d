@@ -50,6 +50,7 @@ export class TrickDetector {
       this.detectTubeRide(telemetry, time, dt) ??
       this.detectFloater(telemetry, time) ??
       this.detectCutback(telemetry, time) ??
+      this.detectSnap(telemetry, time) ??
       this.detectBottomTurn(telemetry, time) ??
       this.detectPumping(telemetry, time) ??
       this.detectCarve(telemetry, time, dt)
@@ -129,6 +130,19 @@ export class TrickDetector {
 
     if (speedGain > 0.9 && uphill && accel && t.speed > 2.8) {
       return this.emit("pumping", time, 0.75);
+    }
+    return null;
+  }
+
+  private detectSnap(t: RiderTelemetry, time: number): TrickEvent | null {
+    if (!this.canTrigger("snap") || !t.submerged || t.speed < 5) return null;
+    if (
+      Math.abs(t.angularVelocityY) > 2 &&
+      Math.abs(t.tiltX) > 0.45 &&
+      Math.abs(t.leanX) > 0.3 &&
+      t.waveFaceAlignment > 0.25
+    ) {
+      return this.emit("snap", time, 1.05);
     }
     return null;
   }

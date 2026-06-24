@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { isCoarsePointer } from "@/lib/input/deviceProfile";
 import type { InputManager } from "@/lib/input/InputManager";
+import { DEADZONE, PAD_MAX, processPadLean } from "@/lib/input/touchPad";
 import { useGameStore } from "@/stores/gameStore";
 
 type TouchControlsProps = {
@@ -10,35 +11,6 @@ type TouchControlsProps = {
 };
 
 const PAD_SIZE = 148;
-const PAD_MAX = 58;
-const DEADZONE = 14;
-/** Mantener el dedo en el pad sin mover = remar hacia adelante */
-const IDLE_PADDLE_Z = 0.82;
-
-function clamp(v: number, min = -1, max = 1) {
-  return Math.max(min, Math.min(max, v));
-}
-
-function processPadLean(dx: number, dy: number): { x: number; z: number } {
-  const len = Math.sqrt(dx * dx + dy * dy);
-
-  if (len < DEADZONE) {
-    return { x: 0, z: IDLE_PADDLE_Z };
-  }
-
-  const clamped = Math.min(len, PAD_MAX);
-  const scale = clamped / PAD_MAX;
-  let leanX = (dx / PAD_MAX) * scale;
-  let leanZ = (-dy / PAD_MAX) * scale;
-
-  // Snap hacia arriba: remar es más fácil que carve preciso
-  if (leanZ > 0.12 && Math.abs(leanX) < leanZ * 0.6) {
-    leanZ = Math.min(1, leanZ * 1.2 + 0.18);
-    leanX *= 0.55;
-  }
-
-  return { x: clamp(leanX), z: clamp(leanZ) };
-}
 
 export function TouchControls({ inputManager }: TouchControlsProps) {
   const [visible, setVisible] = useState(false);

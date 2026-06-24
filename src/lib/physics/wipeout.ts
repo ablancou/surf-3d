@@ -22,7 +22,11 @@ export class WipeoutDetector {
 
     const reason = this.accumulateRisk(telemetry, dt);
     if (!reason) {
-      this.decayRisk(dt * 1.8);
+      const ridingWell =
+        telemetry.submerged &&
+        telemetry.waveFaceAlignment > 0.35 &&
+        telemetry.boardUpY > 0.25;
+      if (ridingWell) this.decayRisk(dt * 2.5);
       return null;
     }
 
@@ -44,11 +48,6 @@ export class WipeoutDetector {
 
   private accumulateRisk(t: RiderTelemetry, dt: number): WipeoutReason | null {
     const s = getSpotPhysics().wipeoutScale;
-    const ridingWell = t.submerged && t.waveFaceAlignment > 0.35 && t.boardUpY > 0.25;
-    if (ridingWell) {
-      this.decayRisk(dt * 2.5);
-    }
-
     if (t.submerged && t.boardUpY < -0.15 / s && t.speed > 6 * s) {
       this.risk.rail += dt * 1.4;
       if (this.risk.rail >= 1) return "rail_bury";

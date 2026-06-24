@@ -1,6 +1,7 @@
 import type { RapierRigidBody } from "@react-three/rapier";
 import * as THREE from "three";
 import { getSpotPhysics } from "@/lib/spots/spotPhysics";
+import { computeRideImpulses, CRUISE_MIN_SPEED } from "@/lib/physics/ridePhysics";
 import { sampleOcean } from "@/lib/waves/oceanSampler";
 import type { GameInputState } from "@/lib/input/types";
 
@@ -13,7 +14,6 @@ const SURFACE_SPRING = 58;
 const WATER_DRAG = 0.935;
 const AIR_DRAG = 0.996;
 const ALIGN_TORQUE = 15;
-const CRUISE_MIN_SPEED = 5.5;
 const INPUT_TORQUE = 9;
 const MAX_SINK_SPEED = -1.8;
 
@@ -132,48 +132,17 @@ export function applySurfboardForces(
     );
 
     if (downhill.lengthSq() > 0.0001) {
-      const alignment = Math.max(vel.dot(downhill), 0);
-      const lift = alignment * p.liftFactor * dt;
-      const railBoost = Math.abs(input.leanX) * p.railGrip * dt;
-      body.applyImpulse(
-        {
-          x: downhill.x * (lift + railBoost),
-          y: 0,
-          z: downhill.z * (lift + railBoost),
-        },
-        true,
+      const ride = computeRideImpulses(
+        { x: downhill.x, z: downhill.z },
+        speed,
+        faceAlignment,
+        downhillSpeed,
+        input,
+        p,
+        dt,
       );
-
-      if (faceAlignment > 0.38 && Math.abs(input.leanX) < 0.4) {
-        const trim = faceAlignment * p.trimFactor * dt * 1.15;
-        body.applyImpulse({ x: downhill.x * trim, y: 0, z: downhill.z * trim }, true);
-      }
-
-      if (downhillSpeed < -0.45 && input.leanZ > 0.15) {
-        const pump = input.leanZ * p.pumpFactor * dt * 1.1;
-        body.applyImpulse({ x: downhill.x * pump, y: 0, z: downhill.z * pump }, true);
-      }
-
-      if (speed < 8 && faceAlignment > 0.28 && input.leanZ > 0.1) {
-        const glide = (8 - speed) * 0.5 * faceAlignment * Math.max(input.leanZ, 0.35) * dt;
-        body.applyImpulse({ x: downhill.x * glide, y: 0, z: downhill.z * glide }, true);
-      }
-
-      // Flow assist: mantener velocidad al ir recto en la pared
-      if (
-        faceAlignment > 0.48 &&
-        speed >= CRUISE_MIN_SPEED &&
-        speed < p.maxSpeed * 0.95 &&
-        Math.abs(input.leanX) < 0.22
-      ) {
-        const cruise = faceAlignment * (1 - Math.abs(input.leanX)) * 0.65 * dt;
-        body.applyImpulse({ x: downhill.x * cruise, y: 0, z: downhill.z * cruise }, true);
-      }
-
-      // Antislot: evita quedarte parado en la ola
-      if (faceAlignment > 0.35 && speed > 1.5 && speed < CRUISE_MIN_SPEED) {
-        const recover = (CRUISE_MIN_SPEED - speed) * 0.55 * faceAlignment * dt;
-        body.applyImpulse({ x: downhill.x * recover, y: 0, z: downhill.z * recover }, true);
+      if (ride.ix !== 0 || ride.iz !== 0) {
+        body.applyImpulse({ x: ride.ix, y: 0, z: ride.iz }, true);
       }
     }
 
@@ -224,11 +193,6 @@ export function applySurfboardForces(
 
   const accel = p.inputAccel * dt;
   if (submerged && downhill.lengthSq() > 0.0001) {
-    const drive = input.leanZ * accel * 1.55;
-    body.applyImpulse(
-      { x: downhill.x * drive, y: 0, z: downhill.z * drive },
-      true,
-    );
     const carveScale = Math.max(0.5, 1 - speed / 30);
     const carve = input.leanX * accel * carveScale;
     body.applyImpulse(

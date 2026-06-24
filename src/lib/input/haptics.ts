@@ -13,6 +13,7 @@ const TRICK_PATTERNS: Record<TrickId, number | number[]> = {
   pumping: [10, 35, 12],
   bottom_turn: 22,
   cutback: [16, 28, 20],
+  snap: [14, 22, 18],
   floater: 26,
   aerial: [12, 18, 35, 28],
   tube_ride: [24, 50, 70, 45],

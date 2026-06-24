@@ -4,6 +4,7 @@ export type TrickId =
   | "pumping"
   | "bottom_turn"
   | "cutback"
+  | "snap"
   | "floater"
   | "aerial"
   | "tube_ride";
@@ -21,6 +22,7 @@ export const TRICK_LABELS: Record<TrickId, string> = {
   pumping: "Pump",
   bottom_turn: "Bottom turn",
   cutback: "Cutback",
+  snap: "Snap",
   floater: "Floater",
   aerial: "Aéreo",
   tube_ride: "Tubo",
@@ -34,6 +36,7 @@ export const TRICK_TIER: Record<TrickId, TrickTier> = {
   pumping: "basic",
   bottom_turn: "mid",
   cutback: "big",
+  snap: "big",
   floater: "big",
   aerial: "epic",
   tube_ride: "epic",
@@ -45,6 +48,7 @@ export const TRICK_COLORS: Record<TrickId, string> = {
   pumping: "#86efac",
   bottom_turn: "#93c5fd",
   cutback: "#c4b5fd",
+  snap: "#f9a8d4",
   floater: "#5eead4",
   aerial: "#fcd34d",
   tube_ride: "#e0f2fe",
@@ -56,6 +60,7 @@ export const TRICK_POINTS: Record<TrickId, number> = {
   pumping: 200,
   bottom_turn: 350,
   cutback: 500,
+  snap: 420,
   floater: 400,
   aerial: 750,
   tube_ride: 1000,

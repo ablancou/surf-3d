@@ -1,10 +1,16 @@
 import { create } from "zustand";
 import type { TrickEvent } from "@/lib/tricks/types";
 import type { WipeoutReason } from "@/lib/tricks/types";
+import {
+  COMBO_WINDOW_SEC,
+  comboMultiplier,
+  keptComboAfterWipeout,
+  trickScore,
+} from "@/lib/scoring/combo";
 
 export type TrickPopup = TrickEvent & { id_key: string };
 
-export const COMBO_WINDOW_SEC = 6.5;
+export { COMBO_WINDOW_SEC };
 
 type GameStore = {
   speed: number;
@@ -100,18 +106,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
   registerTrick: (trick, now) =>
     set((s) => {
       const combo = Math.min(s.combo + 1, 99);
-      const multiplier = 1 + combo * 0.18;
+      const multiplier = comboMultiplier(combo);
       const tierShake =
         trick.id === "aerial" || trick.id === "tube_ride"
           ? 0.28
-          : trick.id === "cutback" || trick.id === "floater"
+          : trick.id === "cutback" || trick.id === "snap" || trick.id === "floater"
             ? 0.2
             : 0.12;
       return {
         combo,
         multiplier,
         comboExpiresAt: now + COMBO_WINDOW_SEC,
-        score: s.score + Math.floor(trick.points * multiplier),
+        score: s.score + trickScore(trick.points, combo),
         trickPopups: [
           ...s.trickPopups.slice(-4),
           { ...trick, id_key: `trick-${popupCounter++}` },
@@ -122,12 +128,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   triggerWipeout: (reason) =>
     set((s) => {
-      const keptCombo = Math.max(0, Math.floor(s.combo * 0.5));
+      const keptCombo = keptComboAfterWipeout(s.combo);
       return {
         wipedOut: true,
         wipeoutReason: reason,
         combo: keptCombo,
-        multiplier: 1 + keptCombo * 0.18,
+        multiplier: comboMultiplier(keptCombo),
         comboExpiresAt: keptCombo > 0 ? s.comboExpiresAt : 0,
         cameraShake: 0.55,
       };
