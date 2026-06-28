@@ -123,7 +123,15 @@ export function applySurfboardForces(
   if (submerged) {
     body.applyImpulse({ x: 0, y: buoyancySum, z: 0 }, true);
 
-    const drag = WATER_DRAG - Math.abs(input.leanX) * 0.02;
+    let drag = WATER_DRAG - Math.abs(input.leanX) * 0.02;
+    
+    // Rail Biting (Carve Extremo)
+    if (speed > 8 && Math.abs(input.leanX) > 0.8) {
+      drag -= 0.04; // Frena agresivamente (muerde el agua)
+      // Torque extra para giro cerrado
+      body.applyTorqueImpulse({ x: 0, y: -input.leanX * 18 * dt, z: 0 }, true);
+    }
+
     let vy = linvel.y * (drag * 0.85 + 0.1);
     if (vy < MAX_SINK_SPEED) vy = MAX_SINK_SPEED;
     body.setLinvel(
@@ -163,10 +171,20 @@ export function applySurfboardForces(
       );
     }
   } else {
+    // Air Grabs
+    const isGrabbing = input.popUp;
+    const currentAirDrag = isGrabbing ? AIR_DRAG * 0.98 : AIR_DRAG;
+    
     body.setLinvel(
-      { x: linvel.x * AIR_DRAG, y: linvel.y * AIR_DRAG, z: linvel.z * AIR_DRAG },
+      { x: linvel.x * currentAirDrag, y: linvel.y * currentAirDrag, z: linvel.z * currentAirDrag },
       true,
     );
+
+    // Estabilización giroscópica al hacer Grab
+    if (isGrabbing) {
+      const w = body.angvel();
+      body.setAngvel({ x: w.x * 0.95, y: w.y * 0.95, z: w.z * 0.95 }, true);
+    }
   }
 
   const leanTorque = INPUT_TORQUE * dt;

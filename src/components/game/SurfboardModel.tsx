@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { boardVisualState } from "@/lib/game/boardVisualState";
 import { gameClock } from "@/lib/game/clock";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { SurferCharacter } from "@/components/game/SurferCharacter";
 
 const DECK_WHITE = "#f8fafc";
 const BLUE_MAIN = "#2563eb";
@@ -130,6 +131,9 @@ export function SurfboardModel() {
       <mesh position={[0, 0.1, 0.82]} rotation={[-Math.PI / 2, 0, 0]} material={accentMaterial}>
         <circleGeometry args={[0.09, 16]} />
       </mesh>
+      
+      {/* Añadir surfista */}
+      <SurferCharacter />
     </group>
   );
 }

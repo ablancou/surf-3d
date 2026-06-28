@@ -2,7 +2,7 @@ import type { GerstnerWave } from "@/lib/waves/waveConfig";
 import type { OceanMode } from "@/lib/waves/oceanSampler";
 import type { SpotMusicTuning, SpotPhysicsTuning, SpotTubeTuning } from "@/lib/spots/spotPhysics";
 
-export type SpotId = "pipeline" | "beach_break" | "point_break" | "sunset_beach";
+export type SpotId = "pipeline" | "beach_break" | "point_break" | "sunset_beach" | "zicatela" | "capo_mannu" | "nazare" | "teahupoo";
 
 export type SpotConfig = {
   id: SpotId;
@@ -244,6 +244,218 @@ export const SURF_SPOTS: Record<SpotId, SpotConfig> = {
       fogFar: 190,
       deepWater: "#243858",
       shallowWater: "#4a9aba",
+    },
+  },
+  zicatela: {
+    id: "zicatela",
+    name: "Zicatela",
+    description: "Mexican Pipeline — fast, powerful, and sandy barrels.",
+    tagline: "El Pipeline Mexicano — rápido y letal",
+    waves: [
+      { amplitude: 1.6, wavelength: 85, speed: 3.0, direction: 0.1, steepness: 0.45 },
+      { amplitude: 0.8, wavelength: 42, speed: 2.5, direction: -0.1, steepness: 0.38 },
+      { amplitude: 0.4, wavelength: 21, speed: 2.0, direction: 0.2, steepness: 0.3 },
+      { amplitude: 0.2, wavelength: 10, speed: 1.5, direction: -0.15, steepness: 0.22 },
+      { amplitude: 0.1, wavelength: 6, speed: 1.1, direction: 0.1, steepness: 0.16 },
+      { amplitude: 0.05, wavelength: 3, speed: 0.8, direction: 0.0, steepness: 0.12 },
+    ],
+    ifft: { windSpeed: 15, windDirection: 0.1, amplitude: 0.0013, heightScale: 3.5 },
+    spawn: { zMin: -20, zMax: -5, xRange: 16 },
+    physics: {
+      buoyancy: 158,
+      liftFactor: 2.5,
+      pumpFactor: 2.6,
+      trimFactor: 1.3,
+      railGrip: 2.0,
+      tubeGrip: 1.5,
+      inputAccel: 11,
+      maxSpeed: 24,
+      spawnBoost: 1.2,
+      wipeoutScale: 1.35,
+    },
+    tube: {
+      minSpeed: 2.6,
+      minSteepness: 0.25,
+      minEnclosure: 0.15,
+      minLip: 0.18,
+      pocketBonus: 1.3,
+      rideScoreMultiplier: 3.5,
+    },
+    music: {
+      baseBpm: 80,
+      chords: [98.0, 110.0, 130.81],
+      filterBase: 650,
+      kickLow: 55,
+      kickHigh: 70,
+      tubeMuffle: 0.45,
+    },
+    preferredOcean: "ifft",
+    atmosphere: {
+      skyInclination: 0.58,
+      fogColor: "#d4a373", // Atardecer cálido
+      fogNear: 35,
+      fogFar: 180,
+      deepWater: "#083d56", // Azul más verde y profundo
+      shallowWater: "#3e8e9d",
+    },
+  },
+  capo_mannu: {
+    id: "capo_mannu",
+    name: "Capo Mannu",
+    description: "Sardinian rock-bottom gem — Mediterranean perfection.",
+    tagline: "La gema del Mediterráneo",
+    waves: [
+      { amplitude: 1.1, wavelength: 65, speed: 2.6, direction: -0.2, steepness: 0.35 },
+      { amplitude: 0.6, wavelength: 32, speed: 2.1, direction: -0.1, steepness: 0.3 },
+      { amplitude: 0.3, wavelength: 16, speed: 1.7, direction: -0.3, steepness: 0.25 },
+      { amplitude: 0.15, wavelength: 8, speed: 1.3, direction: 0.1, steepness: 0.2 },
+      { amplitude: 0.08, wavelength: 4, speed: 1.0, direction: -0.15, steepness: 0.15 },
+      { amplitude: 0.04, wavelength: 2, speed: 0.7, direction: -0.05, steepness: 0.1 },
+    ],
+    ifft: { windSpeed: 12, windDirection: -0.2, amplitude: 0.001, heightScale: 2.9 },
+    spawn: { zMin: -16, zMax: -4, xRange: 18 },
+    physics: {
+      buoyancy: 165,
+      liftFactor: 2.6,
+      pumpFactor: 3.0,
+      trimFactor: 1.4,
+      railGrip: 1.85,
+      tubeGrip: 1.2,
+      inputAccel: 12,
+      maxSpeed: 21,
+      spawnBoost: 1.25,
+      wipeoutScale: 1.15,
+    },
+    tube: {
+      minSpeed: 3.0,
+      minSteepness: 0.28,
+      minEnclosure: 0.18,
+      minLip: 0.2,
+      pocketBonus: 0.9,
+      rideScoreMultiplier: 2.4,
+    },
+    music: {
+      baseBpm: 88,
+      chords: [146.83, 164.81, 196.0],
+      filterBase: 1000,
+      kickLow: 70,
+      kickHigh: 85,
+      tubeMuffle: 0.52,
+    },
+    preferredOcean: "gerstner",
+    atmosphere: {
+      skyInclination: 0.5,
+      fogColor: "#b2d8d8",
+      fogNear: 40,
+      fogFar: 200,
+      deepWater: "#004c4c", // Verde esmeralda profundo
+      shallowWater: "#008080", // Cyan esmeralda
+    },
+  },
+  nazare: {
+    id: "nazare",
+    name: "Nazaré",
+    description: "The biggest wave in the world — immense, dark, and terrifying.",
+    tagline: "El gigante de Portugal — sobrevive",
+    waves: [
+      { amplitude: 4.5, wavelength: 180, speed: 4.5, direction: 0.05, steepness: 0.5 },
+      { amplitude: 2.2, wavelength: 90, speed: 3.6, direction: 0.1, steepness: 0.4 },
+      { amplitude: 1.0, wavelength: 45, speed: 2.8, direction: -0.1, steepness: 0.3 },
+      { amplitude: 0.5, wavelength: 22, speed: 2.2, direction: 0.05, steepness: 0.25 },
+      { amplitude: 0.2, wavelength: 10, speed: 1.6, direction: -0.05, steepness: 0.18 },
+      { amplitude: 0.1, wavelength: 5, speed: 1.2, direction: 0.15, steepness: 0.12 },
+    ],
+    ifft: { windSpeed: 24, windDirection: 0.05, amplitude: 0.0035, heightScale: 6.5 },
+    spawn: { zMin: -35, zMax: -15, xRange: 25 },
+    physics: {
+      buoyancy: 130, // Agua pesada
+      liftFactor: 2.2,
+      pumpFactor: 1.8, // Difícil bombear
+      trimFactor: 1.1,
+      railGrip: 2.5,
+      tubeGrip: 1.8,
+      inputAccel: 8.5,
+      maxSpeed: 35, // Velocidad máxima altísima
+      spawnBoost: 2.5, // Empuje inicial masivo
+      wipeoutScale: 3.5, // Wipeout brutal
+    },
+    tube: {
+      minSpeed: 4.0,
+      minSteepness: 0.35,
+      minEnclosure: 0.25,
+      minLip: 0.3,
+      pocketBonus: 2.0,
+      rideScoreMultiplier: 5.0,
+    },
+    music: {
+      baseBpm: 120, // Rápido y tenso
+      chords: [55.0, 65.41, 73.42], // Muy grave
+      filterBase: 300,
+      kickLow: 35,
+      kickHigh: 50,
+      tubeMuffle: 0.2,
+    },
+    preferredOcean: "ifft",
+    atmosphere: {
+      skyInclination: 0.45,
+      fogColor: "#6c7a86", // Gris tormentoso
+      fogNear: 20,
+      fogFar: 140, // Niebla pesada
+      deepWater: "#04141c", // Casi negro
+      shallowWater: "#132d3b",
+    },
+  },
+  teahupoo: {
+    id: "teahupoo",
+    name: "Teahupo'o",
+    description: "The heaviest slab — below sea level barrel.",
+    tagline: "El muro de calaveras — tubo extremo",
+    waves: [
+      { amplitude: 2.2, wavelength: 100, speed: 3.5, direction: 0.0, steepness: 0.55 }, // Ola corta pero altísima pendiente
+      { amplitude: 0.9, wavelength: 50, speed: 2.7, direction: 0.0, steepness: 0.45 },
+      { amplitude: 0.4, wavelength: 25, speed: 2.1, direction: -0.1, steepness: 0.35 },
+      { amplitude: 0.2, wavelength: 12, speed: 1.6, direction: 0.1, steepness: 0.25 },
+      { amplitude: 0.1, wavelength: 6, speed: 1.2, direction: -0.1, steepness: 0.18 },
+      { amplitude: 0.05, wavelength: 3, speed: 0.9, direction: 0.05, steepness: 0.14 },
+    ],
+    ifft: { windSpeed: 14, windDirection: 0.0, amplitude: 0.0018, heightScale: 4.2 },
+    spawn: { zMin: -24, zMax: -8, xRange: 12 },
+    physics: {
+      buoyancy: 155,
+      liftFactor: 2.8, // Mucho lift en el drop
+      pumpFactor: 2.1,
+      trimFactor: 1.4,
+      railGrip: 2.2,
+      tubeGrip: 1.7,
+      inputAccel: 11.5,
+      maxSpeed: 28,
+      spawnBoost: 1.4,
+      wipeoutScale: 2.2,
+    },
+    tube: {
+      minSpeed: 2.8,
+      minSteepness: 0.2,
+      minEnclosure: 0.1,
+      minLip: 0.12,
+      pocketBonus: 1.5,
+      rideScoreMultiplier: 4.5,
+    },
+    music: {
+      baseBpm: 70,
+      chords: [73.42, 87.31, 103.83],
+      filterBase: 450,
+      kickLow: 45,
+      kickHigh: 60,
+      tubeMuffle: 0.3,
+    },
+    preferredOcean: "ifft",
+    atmosphere: {
+      skyInclination: 0.52,
+      fogColor: "#a3c2cf",
+      fogNear: 30,
+      fogFar: 170,
+      deepWater: "#09253d",
+      shallowWater: "#13c4a3", // Coral vibrante
     },
   },
 };

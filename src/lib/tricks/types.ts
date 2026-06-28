@@ -88,7 +88,7 @@ export type RiderTelemetry = {
   lipOverhead: number;
 };
 
-export type WipeoutReason = "nose_dive" | "rail_bury" | "bail";
+export type WipeoutReason = "nose_dive" | "rail_bury" | "bail" | "collision";
 
 export type WipeoutEvent = {
   reason: WipeoutReason;

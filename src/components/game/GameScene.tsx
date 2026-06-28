@@ -15,6 +15,7 @@ import { ShadowReceiver } from "@/components/game/ShadowReceiver";
 import { RemoteSurfers } from "@/components/game/RemoteSurfers";
 import { ReplayGhosts } from "@/components/game/ReplayGhost";
 import { Sky } from "@/components/game/Sky";
+import { Coastline } from "@/components/game/Coastline";
 import { SprayParticles, type SprayParticlesHandle } from "@/components/game/SprayParticles";
 import { Surfboard } from "@/components/game/Surfboard";
 import { gameClock } from "@/lib/game/clock";
@@ -56,6 +57,7 @@ export function GameScene({ inputManager }: GameSceneProps) {
       <SceneLighting />
 
       <Sky />
+      <Coastline />
       <OceanSystem />
       <Seafloor />
       <ShadowReceiver />

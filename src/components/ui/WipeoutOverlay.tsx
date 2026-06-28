@@ -6,6 +6,7 @@ const REASON_LABELS = {
   nose_dive: "¡Ups — nariz bajo!",
   rail_bury: "¡Ups — poco equilibrio!",
   bail: "¡Splash!",
+  collision: "¡Choque! Evita el Drop In.",
 } as const;
 
 export function WipeoutOverlay() {

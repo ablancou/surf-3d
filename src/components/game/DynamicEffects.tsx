@@ -1,7 +1,7 @@
 "use client";
 
 import { useFrame } from "@react-three/fiber";
-import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
+import { Bloom, DepthOfField, EffectComposer, HueSaturation, Vignette } from "@react-three/postprocessing";
 import { useRef, useState } from "react";
 import { boardVisualState } from "@/lib/game/boardVisualState";
 import { useGameStore } from "@/stores/gameStore";
@@ -32,11 +32,21 @@ export function DynamicEffects() {
     <EffectComposer multisampling={0}>
       <Bloom
         intensity={bloomIntensity}
-        luminanceThreshold={0.58}
-        luminanceSmoothing={0.4}
+        luminanceThreshold={0.65}
+        luminanceSmoothing={0.3}
         mipmapBlur
       />
-      <Vignette eskil={false} offset={0.12} darkness={0.55} />
+      <DepthOfField 
+        focusDistance={0.015} 
+        focalLength={0.05} 
+        bokehScale={1.5} 
+        height={480} 
+      />
+      <HueSaturation
+        hue={0}
+        saturation={0.15} // Ligeramente más saturado para un look más "Wow"
+      />
+      <Vignette eskil={false} offset={0.15} darkness={0.6} />
     </EffectComposer>
   );
 }

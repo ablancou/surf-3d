@@ -24,6 +24,8 @@ import { TubeOverlay } from "@/components/ui/TubeOverlay";
 import { RideRecapOverlay } from "@/components/ui/RideRecapOverlay";
 import { StartMenuOverlay } from "@/components/ui/StartMenuOverlay";
 import { WipeoutOverlay } from "@/components/ui/WipeoutOverlay";
+import { RulesOverlay } from "@/components/ui/RulesOverlay";
+import { RulesEngine } from "@/components/game/RulesEngine";
 import { audioEngine } from "@/lib/audio/AudioEngine";
 import { InputManager } from "@/lib/input/InputManager";
 import { useGameStore } from "@/stores/gameStore";
@@ -101,12 +103,14 @@ export function Game() {
       >
         <GameScene inputManager={inputManagerRef.current!} />
       </Canvas>
+      <RulesEngine />
       <SpotSelector />
       <MultiplayerPanel />
       <LeaderboardPanel />
       <GameHUD rendererKind={rendererKind} oceanMode={oceanMode} perfTier={perfTier} />
       <PlayHints />
       <TutorialOverlay />
+      <RulesOverlay />
       <TrickPopups />
       <ComboBanner />
       <MilestoneBanner />
