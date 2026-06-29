@@ -14,8 +14,8 @@ export function MilestoneBanner() {
   useEffect(() => {
     if (wipedOut) {
       hitRef.current = 0;
-      setBanner(null);
-      return;
+      const t0 = setTimeout(() => setBanner(null), 0);
+      return () => clearTimeout(t0);
     }
 
     const milestone = MILESTONES.find((m) => score >= m && m > hitRef.current);

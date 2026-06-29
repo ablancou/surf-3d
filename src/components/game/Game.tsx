@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GameScene } from "@/components/game/GameScene";
 import { ControlsOverlay } from "@/components/ui/ControlsOverlay";
@@ -32,17 +32,13 @@ import { useGameStore } from "@/stores/gameStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 export function Game() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const inputManagerRef = useRef<InputManager | null>(null);
+  const [inputManager] = useState(() => new InputManager());
   const audioStarted = useRef(false);
   const oceanMode = useSettingsStore((s) => s.oceanMode);
   const rendererKind = useSettingsStore((s) => s.rendererKind);
   const perfTier = useSettingsStore((s) => s.perfTier);
   const perf = useSettingsStore((s) => s.perf);
   const initPerf = useSettingsStore((s) => s.initPerf);
-
-  if (!inputManagerRef.current) {
-    inputManagerRef.current = new InputManager();
-  }
 
   useEffect(() => {
     initPerf();
@@ -62,7 +58,7 @@ export function Game() {
 
   useEffect(() => {
     const el = containerRef.current;
-    const input = inputManagerRef.current;
+    const input = inputManager;
     if (!el || !input) return;
 
     input.bind(el);
@@ -101,7 +97,7 @@ export function Game() {
           gl.setClearColor(new THREE.Color("#87b8d9"));
         }}
       >
-        <GameScene inputManager={inputManagerRef.current!} />
+        <GameScene inputManager={inputManager} />
       </Canvas>
       <RulesEngine />
       <SpotSelector />
@@ -124,7 +120,7 @@ export function Game() {
       <RideRecapOverlay />
       <StartMenuOverlay />
       <ControlsOverlay />
-      {inputManagerRef.current && <TouchControls inputManager={inputManagerRef.current} />}
+      {inputManager && <TouchControls inputManager={inputManager} />}
     </div>
   );
 }

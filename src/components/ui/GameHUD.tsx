@@ -43,8 +43,8 @@ export function GameHUD({ rendererKind, oceanMode, perfTier }: GameHUDProps) {
 
   useEffect(() => {
     if (combo <= 0 || comboExpiresAt <= 0) {
-      setComboFill(0);
-      return;
+      const t0 = setTimeout(() => setComboFill(0), 0);
+      return () => clearTimeout(t0);
     }
     const tick = () => {
       const remaining = Math.max(0, comboExpiresAt - gameClock.time);

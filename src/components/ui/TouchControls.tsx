@@ -15,19 +15,16 @@ const PAD_SIZE = 148;
 export function TouchControls({ inputManager }: TouchControlsProps) {
   const [visible, setVisible] = useState(false);
   const padRef = useRef<HTMLDivElement>(null);
-  const knobRef = useRef({ x: 0, y: 0 });
-  const activeRef = useRef(false);
-  const touchIdRef = useRef<number | null>(null);
-  const [, tick] = useState(0);
-  const popReady = useGameStore((s) => s.popReady);
+  const [knobPos, setKnobPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    setVisible(isCoarsePointer());
+    const t = setTimeout(() => setVisible(isCoarsePointer()), 0);
+    return () => clearTimeout(t);
   }, []);
 
   const setKnob = useCallback((x: number, y: number) => {
     knobRef.current = { x, y };
-    tick((n) => n + 1);
+    setKnobPos({ x, y });
   }, []);
 
   const applyLean = useCallback(
@@ -115,7 +112,7 @@ export function TouchControls({ inputManager }: TouchControlsProps) {
           <div
             className="absolute top-1/2 left-1/2 h-14 w-14 rounded-full border border-white/35 bg-white/25 shadow-inner transition-transform duration-75"
             style={{
-              transform: `translate(calc(-50% + ${knobRef.current.x}px), calc(-50% + ${knobRef.current.y}px))`,
+              transform: `translate(calc(-50% + ${knobPos.x}px), calc(-50% + ${knobPos.y}px))`,
             }}
           />
         </div>

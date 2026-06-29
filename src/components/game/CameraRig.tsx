@@ -1,6 +1,6 @@
 "use client";
 
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";
 import { boardVisualState } from "@/lib/game/boardVisualState";
@@ -14,8 +14,8 @@ const AERIAL_DISTANCE = 10.5;
 const LOOK_AHEAD = 13;
 
 type CameraRigProps = {
-  targetPosition: THREE.Vector3;
-  targetRotation: THREE.Quaternion;
+  targetPositionRef: React.RefObject<THREE.Vector3>;
+  targetRotationRef: React.RefObject<THREE.Quaternion>;
 };
 
 const desiredPosition = new THREE.Vector3();
@@ -25,14 +25,13 @@ const lookOffset = new THREE.Vector3();
 const shakeOffset = new THREE.Vector3();
 const forward = new THREE.Vector3();
 
-export function CameraRig({ targetPosition, targetRotation }: CameraRigProps) {
-  const { camera } = useThree();
+export function CameraRig({ targetPositionRef, targetRotationRef }: CameraRigProps) {
   const smoothPos = useRef(new THREE.Vector3(0, 8.5, -18));
   const smoothLook = useRef(new THREE.Vector3(0, 0.8, 12));
   const snapped = useRef(false);
   const wasWipedOut = useRef(false);
 
-  useFrame((_, delta) => {
+  useFrame(({ camera }, delta) => {
     const state = useGameStore.getState();
     const shake = state.wipedOut ? state.cameraShake * 0.35 : state.cameraShake;
     state.tickCameraShake(delta);
@@ -57,7 +56,12 @@ export function CameraRig({ targetPosition, targetRotation }: CameraRigProps) {
       persp.updateProjectionMatrix();
     }
 
-    forward.set(0, 0, 1).applyQuaternion(targetRotation);
+    const targetRotation = targetRotationRef.current;
+    if (targetRotation) {
+      forward.set(0, 0, 1).applyQuaternion(targetRotation);
+    } else {
+      forward.set(0, 0, 1);
+    }
     forward.y = 0;
     if (forward.lengthSq() < 0.0001) forward.set(0, 0, 1);
     forward.normalize();

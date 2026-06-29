@@ -13,7 +13,7 @@ export function Coastline() {
     geo.rotateX(-Math.PI / 2); // Acostado en el piso
 
     const positions = geo.attributes.position.array;
-    let color = new THREE.Color("#4a5d23"); // Verde por defecto (Tahití/Hawái)
+    const color = new THREE.Color("#4a5d23"); // Verde por defecto (Tahití/Hawái)
     let mountainHeight = 1;
     let offset = [0, 0, -350] as [number, number, number];
 

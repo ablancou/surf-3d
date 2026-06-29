@@ -9,23 +9,19 @@ import { sampleBreakingWave } from "@/lib/waves/breakingWave";
 import { getActiveWaves } from "@/stores/spotStore";
 import { useGameStore } from "@/stores/gameStore";
 
+const BARREL_MATERIAL = new THREE.MeshBasicMaterial({
+  color: "#0c4a6e",
+  transparent: true,
+  opacity: 0.22,
+  side: THREE.BackSide,
+  depthWrite: false,
+});
+
 /** 3D barrel tunnel mesh — visible when inside curl geometry */
 export function BarrelZone() {
   const meshRef = useRef<THREE.Mesh>(null);
   const inTube = useGameStore((s) => s.inTube);
   const tubeDepth = useGameStore((s) => s.tubeDepth);
-
-  const material = useMemo(
-    () =>
-      new THREE.MeshBasicMaterial({
-        color: "#0c4a6e",
-        transparent: true,
-        opacity: 0.22,
-        side: THREE.BackSide,
-        depthWrite: false,
-      }),
-    [],
-  );
 
   useFrame(() => {
     const mesh = meshRef.current;
@@ -47,11 +43,11 @@ export function BarrelZone() {
     mesh.position.set(boardVisualState.x, boardVisualState.y + 0.6, boardVisualState.z);
     mesh.rotation.y = br.peelDirection;
     mesh.scale.set(radius, length * 0.5, radius);
-    material.opacity = 0.15 + tubeDepth * 0.25 + br.curl * 0.12;
+    BARREL_MATERIAL.opacity = 0.15 + tubeDepth * 0.25 + br.curl * 0.12;
   });
 
   return (
-    <mesh ref={meshRef} visible={false} material={material}>
+    <mesh ref={meshRef} visible={false} material={BARREL_MATERIAL}>
       <cylinderGeometry args={[1, 1.15, 1, 16, 1, true]} />
     </mesh>
   );

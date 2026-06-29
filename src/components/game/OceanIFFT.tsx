@@ -38,7 +38,7 @@ export function OceanIFFT() {
   const uniforms = useMemo(
     () => ({
       uTime: { value: 0 },
-      uHeightMap: { value: textureRef.current },
+      uHeightMap: { value: null },
       uOceanDomain: { value: IFFT_LENGTH },
       uOceanHalf: { value: IFFT_LENGTH * 0.5 },
       uHeightScale: { value: spot.ifft.heightScale },

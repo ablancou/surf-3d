@@ -119,7 +119,8 @@ export function PlayHints() {
       const t = setTimeout(() => setFaded(true), 3000);
       return () => clearTimeout(t);
     }
-    setFaded(false);
+    const t0 = setTimeout(() => setFaded(false), 0);
+    return () => clearTimeout(t0);
   }, [speed, combo]);
 
   if (tutorialActive || faded) return null;

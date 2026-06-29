@@ -14,8 +14,9 @@ export function ComboBanner() {
 
   useEffect(() => {
     if (wipedOut) {
-      setBanner(null);
+      const t0 = setTimeout(() => setBanner(null), 0);
       hitRef.current = 0;
+      return () => clearTimeout(t0);
       return;
     }
 

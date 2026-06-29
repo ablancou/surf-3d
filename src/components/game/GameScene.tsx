@@ -62,8 +62,8 @@ export function GameScene({ inputManager }: GameSceneProps) {
       <Seafloor />
       <ShadowReceiver />
       <CameraRig
-        targetPosition={boardPosition.current}
-        targetRotation={boardRotation.current}
+        targetPositionRef={boardPosition}
+        targetRotationRef={boardRotation}
       />
       <BarrelZone />
       <SprayParticles ref={particlesRef} />

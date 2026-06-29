@@ -10,14 +10,17 @@ export function DropBanner() {
 
   useEffect(() => {
     if (dropBannerUntil <= 0) {
-      setVisible(false);
-      return;
+      const t = setTimeout(() => setVisible(false), 0);
+      return () => clearTimeout(t);
     }
-    setVisible(true);
+    const tVisible = setTimeout(() => setVisible(true), 0);
     const tick = () => setVisible(gameClock.time < dropBannerUntil);
     tick();
     const id = window.setInterval(tick, 50);
-    return () => window.clearInterval(id);
+    return () => {
+      clearTimeout(tVisible);
+      window.clearInterval(id);
+    };
   }, [dropBannerUntil]);
 
   if (!visible) return null;

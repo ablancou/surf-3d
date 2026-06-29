@@ -1,7 +1,7 @@
 "use client";
 
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { boardVisualState } from "@/lib/game/boardVisualState";
 import { gameClock } from "@/lib/game/clock";
@@ -12,6 +12,29 @@ const DECK_WHITE = "#f8fafc";
 const BLUE_MAIN = "#2563eb";
 const BLUE_DEEP = "#1e3a8a";
 const BLUE_LIGHT = "#93c5fd";
+
+const DECK_MATERIAL = new THREE.MeshStandardMaterial({
+  color: DECK_WHITE,
+  emissive: BLUE_LIGHT,
+  emissiveIntensity: 0.28,
+  roughness: 0.28,
+  metalness: 0.06,
+});
+
+const HULL_MATERIAL = new THREE.MeshStandardMaterial({
+  color: BLUE_MAIN,
+  emissive: BLUE_DEEP,
+  emissiveIntensity: 0.12,
+  roughness: 0.35,
+  metalness: 0.1,
+});
+
+const ACCENT_MATERIAL = new THREE.MeshStandardMaterial({
+  color: BLUE_DEEP,
+  emissive: BLUE_MAIN,
+  emissiveIntensity: 0.08,
+  roughness: 0.4,
+});
 
 function createSurfboardGeometry() {
   const shape = new THREE.Shape();
@@ -41,41 +64,6 @@ export function SurfboardModel() {
   const castShadow = useSettingsStore((s) => s.perf.enableShadows);
   const geometry = useMemo(() => createSurfboardGeometry(), []);
 
-  const deckMaterial = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        color: DECK_WHITE,
-        emissive: BLUE_LIGHT,
-        emissiveIntensity: 0.28,
-        roughness: 0.28,
-        metalness: 0.06,
-      }),
-    [],
-  );
-
-  const hullMaterial = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        color: BLUE_MAIN,
-        emissive: BLUE_DEEP,
-        emissiveIntensity: 0.12,
-        roughness: 0.35,
-        metalness: 0.1,
-      }),
-    [],
-  );
-
-  const accentMaterial = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        color: BLUE_DEEP,
-        emissive: BLUE_MAIN,
-        emissiveIntensity: 0.08,
-        roughness: 0.4,
-      }),
-    [],
-  );
-
   useFrame(() => {
     const group = groupRef.current;
     if (!group) return;
@@ -102,33 +90,34 @@ export function SurfboardModel() {
 
     group.rotation.x = pitchX;
     group.rotation.z = airborne ? carveBank * 0.6 + flex * 0.15 : carveBank + flex * 0.3;
-    deckMaterial.emissiveIntensity = inTube ? 0.38 : airborne ? 0.42 + airTime * 0.08 : 0.28 + speed * 0.012;
+    DECK_MATERIAL.emissiveIntensity = inTube ? 0.38 : airborne ? 0.42 + airTime * 0.08 : 0.28 + speed * 0.012;
   });
 
   return (
     <group ref={groupRef} scale={1.7}>
-      <mesh geometry={geometry} material={deckMaterial} castShadow={castShadow} />
+      <mesh geometry={geometry} material={DECK_MATERIAL} castShadow={castShadow} receiveShadow={castShadow} />
       <mesh
         position={[0, -0.04, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
-        material={hullMaterial}
+        material={HULL_MATERIAL}
         castShadow={castShadow}
+        receiveShadow={castShadow}
       >
         <planeGeometry args={[0.46, 2.05]} />
       </mesh>
-      <mesh position={[0, 0.09, 0.05]} rotation={[-Math.PI / 2, 0, 0]} material={accentMaterial}>
+      <mesh position={[0, 0.09, 0.05]} rotation={[-Math.PI / 2, 0, 0]} material={ACCENT_MATERIAL} castShadow={castShadow} receiveShadow={castShadow}>
         <planeGeometry args={[0.07, 1.45]} />
       </mesh>
-      <mesh position={[0.22, 0.07, 0]} rotation={[0, 0, 0.08]} material={accentMaterial}>
+      <mesh position={[0.22, 0.07, 0]} rotation={[0, 0, 0.08]} material={ACCENT_MATERIAL}>
         <boxGeometry args={[0.025, 0.04, 1.75]} />
       </mesh>
-      <mesh position={[-0.22, 0.07, 0]} rotation={[0, 0, -0.08]} material={accentMaterial}>
+      <mesh position={[-0.22, 0.07, 0]} rotation={[0, 0, -0.08]} material={ACCENT_MATERIAL}>
         <boxGeometry args={[0.025, 0.04, 1.75]} />
       </mesh>
-      <mesh position={[0, 0.05, -0.82]} rotation={[0.35, 0, 0]} material={hullMaterial}>
+      <mesh position={[0, 0.05, -0.82]} rotation={[0.35, 0, 0]} material={HULL_MATERIAL}>
         <boxGeometry args={[0.07, 0.14, 0.12]} />
       </mesh>
-      <mesh position={[0, 0.1, 0.82]} rotation={[-Math.PI / 2, 0, 0]} material={accentMaterial}>
+      <mesh position={[0, 0.1, 0.82]} rotation={[-Math.PI / 2, 0, 0]} material={ACCENT_MATERIAL}>
         <circleGeometry args={[0.09, 16]} />
       </mesh>
       
